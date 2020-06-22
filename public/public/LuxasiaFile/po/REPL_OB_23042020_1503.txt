@@ -1,0 +1,1 @@
+Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|VENDOR_CODE|VENDOR_NAME|VENDOR_ADDRESS|Remarks1|Remarks2|Remarks3
