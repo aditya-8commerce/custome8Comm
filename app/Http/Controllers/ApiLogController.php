@@ -26,7 +26,7 @@ class ApiLogController extends Controller
 
     }
 
-	public static function insertLog($hostname,$channel,$message,$level_name,$context,$url,$company_id=''){
+	public static function insertLog($hostname,$channel,$message,$level_name,$context,$url){
 		$insert = [
             'instance'    => $hostname,
             'channel'     => $channel,
@@ -34,7 +34,6 @@ class ApiLogController extends Controller
             'level'       => $level_name,
             'context'     => $context,
             'url'         => $url,
-            'company_id'  => $company_id,
             'ip'          => app('request')->server('REMOTE_ADDR'),
             'user_agent'  => app('request')->server('HTTP_USER_AGENT')
         ];
@@ -42,7 +41,7 @@ class ApiLogController extends Controller
         ApiLog::create($insert);
 	}
 	
-    public static function sendEmail($subject,$content,$attachment){
+    public static function sendEmail($subject,$content,$attachment=array()){
         // $to = array('nugroho.aditya@8commerce.com','operation@8commerce.com','it@8commerce.com');
         $to = array('nugroho.aditya@8commerce.com');
             Mail::to($to)->send(new OmsEmailNotification($subject,$content ,$attachment));
@@ -64,14 +63,13 @@ class ApiLogController extends Controller
         $orderStatusTracking->save();
     }
 	
-    public static function addErrorIssue($module,$status,$response,$message,$company_id,$param1=''){
+    public static function addErrorIssue($module,$status,$response,$message,$param1=''){
         $log = new Log;
         $log->module        	= $module;
         $log->status			= $status;
         $log->response			= $response;
         $log->message			= $message;
         $log->fixed 			= 0;
-        $log->company_id		= $company_id;
         $log->param1    		= $param1;
         $log->ip    		    = '127.0.0.1';
         $log->save();

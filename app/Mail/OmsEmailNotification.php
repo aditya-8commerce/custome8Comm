@@ -14,7 +14,7 @@ class OmsEmailNotification extends Mailable {
 	public $content = '';
 	public $attachments = array();
 	
-	public function __construct($subject, $content , $attachments) {
+	public function __construct($subject, $content , $attachments=array()) {
 		$this->subject      = $subject;
 		$this->content      = $content;
 		$this->attachments  = $attachments;

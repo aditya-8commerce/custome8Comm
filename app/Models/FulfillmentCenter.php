@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FulfillmentCenter extends Model
 {
+    
     /**
      * The name of the "created at" column.
      *
@@ -23,6 +24,7 @@ class FulfillmentCenter extends Model
     protected $table        = 'tbl_fulfillment_center';
     protected $primaryKey   = 'fulfillment_center_id';
     protected $keyType      = 'string';
+    public $incrementing    = false;
     protected $fillable     = array('name','address','address2','province','city','area','sub_area','postal_code','village','phone','type','company_id');
     public $timestamps      = true;
   
@@ -34,5 +36,10 @@ class FulfillmentCenter extends Model
     public function poHeader()
     {
         return $this->belongsTo('App\Models\PoHeader', 'fulfillment_center_id','fulfillment_center_id');
+    }
+
+    public function inventory()
+    {
+        return $this->belongsTo('App\Models\Inventory', 'fulfillment_center_id','fulfillment_center_id');
     }
 }
