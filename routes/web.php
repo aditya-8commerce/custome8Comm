@@ -14,9 +14,9 @@ $router->get('/coba',['as' => 'coba','uses' => 'IndexController@coba']);
 $router->group(['prefix' => 'luxasia', 'namespace' => 'Luxasia'], function () use ($router) {
 	
     $router->get('/',['as' => 'luxasiaIndex','uses' => 'IndexController@index']);
-    $router->get('import-sku',['as' => 'luxasiaImportSKU','uses' => 'IndexController@importSKU']);
-    $router->get('import-po',['as' => 'luxasiaImportPo','uses' => 'IndexController@importPo']);
-    $router->get('import-so',['as' => 'luxasiaImportSo','uses' => 'IndexController@importSo']);
+    $router->get('sku',['as' => 'luxasiaImportSKU','uses' => 'IndexController@importSKU']);
+    $router->get('po',['as' => 'luxasiaImportPo','uses' => 'IndexController@importPo']);
+    $router->get('so',['as' => 'luxasiaImportSo','uses' => 'IndexController@importSo']);
 
 });
 
