@@ -110,7 +110,7 @@ class IndexController extends Controller
                fclose($fp);
                
                
-               ApiLog::insertLog('Controllers\Luxasia\IndexController\importSKU','production',$name, 'INFO' , json_encode($all_rows),'/luxasia/import-sku');
+               ApiLog::insertLog('Controllers\Luxasia\IndexController\importSKU','production',$name, 'INFO' , json_encode($all_rows),'/luxasia/sku');
                 // dd($file);
                 unlink($file['dirname'].'/'.$name);
 			   
@@ -305,8 +305,7 @@ class IndexController extends Controller
                     $this->insertPoData($row);
                 }
             }
-            ApiLog::insertLog('Controllers\Luxasia\IndexController\importPO','production',$name, 'INFO' , $string,'/luxasia/po');
-           
+            ApiLog::insertLog('Controllers\Luxasia\IndexController\importPO','production',$name, 'INFO' , $string,'/luxasia/po');           
             unlink($file['dirname'].'/'.$name);
             
         }else{
@@ -466,10 +465,10 @@ class IndexController extends Controller
                 $details[]  = ['sku_code' => $sku->sku_code , 'sku_description' => $sku->sku_description ,'qty_order' => $get->qty_order , 'price' => $sku->price , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => 'draft'];
             }else{
                 $details[]  = ['sku_code' => $get->sku_code , 'sku_description' => 'sku not found' ,'qty_order' => $get->qty_order , 'price' => 0 , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => 'draft'];
-                // ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($get), 'ERROR' ,'sku not found','/',$this->company_id);
-                // $subject    = 'Luxasia PO Integration';
-                // $content    = 'sku not found .<br><br>'.json_encode($get);
-                // ApiLog::sendEmail($subject,$content);
+                ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($get), 'ERROR' ,'sku not found','/',$this->company_id);
+                $subject    = 'Luxasia PO Integration';
+                $content    = 'sku not found .<br><br>'.json_encode($get);
+                ApiLog::sendEmail($subject,$content);
             }
         }
 
@@ -481,6 +480,77 @@ class IndexController extends Controller
     
     private function insertPO($datas){
         return $datas;
+    }
+
+    /**
+     * PO receipts
+     */
+
+	public function receiptsPo(){
+	    $directory  = public_path('public/LuxasiaFile/receipts-po');
+        $fileName   = 'GR_IB_'.date('dmY_His').'.TXT';
+
+        $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->get();
+        // $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->toSql();
+        // dd($bufferDatas);
+        if(count($bufferDatas) > 0){
+            $datas  = [];
+
+            foreach($bufferDatas as $buffer){
+                $check = PoHeader::where([['po_no',$buffer->po_no] , ['company_id' , $this->company_id], ['status','received']])->with('details')->first();
+                if($check){
+                    $datas[]    = ['id' => $buffer->id,'datas' => json_decode($buffer->datas,true),'datas_sci' => $check];
+                }else{
+                    continue;
+                }
+            }
+            
+            if(count($datas) > 0){
+                // echo json_encode($datas);
+     
+                // $fp     	= fopen($directory.'/'.$fileName,'w');
+                // $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3\n";
+                $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3<br>";
+ 
+                foreach($datas as $data){
+                    foreach($data["datas"] as $d){
+                        $checkSCIpoDetail   = $this->checkSCIpoDetail($d, $data["datas_sci"]);
+                        if($checkSCIpoDetail){
+                            // $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|".$d["StorageLocation"]."|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||".$d["VBN"]."|".$d["MANU_DATE"]."|".$d["EXPR_DATE"]."|||\n";
+                            $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|".$d["StorageLocation"]."|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||VBN|MANU_DATE|EXPR_DATE|||<br>";
+                        }else{
+                            continue;
+                        }
+                    }
+
+                    // $this->updatePoBuffer($data["id"],['seq' => 5]);
+                }
+
+               echo $text;
+                // fwrite($fp, $text);
+                // fclose($fp);
+            }else{
+                return IndexRes::resultData(200,['message' => 'no data'],[]);
+            }
+        }else{
+            return IndexRes::resultData(200,['message' => 'no data'],[]);
+        }
+    }
+
+    private function checkSCIpoDetail($buffer , $sci){
+        $detail     = [];
+        foreach($sci['details'] as $det){
+            if($det['sku_code'] == $buffer['ItemCode']){
+                $detail = $det;
+                break;
+            }
+        }
+
+        return $detail;
+    }
+
+    private function updatePoBuffer($id , $update){
+        PoBuffer::where('id', $id)->update($update);
     }
 
 }
