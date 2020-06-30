@@ -18,6 +18,7 @@ use App\Res\IndexRes;
  
 use App\Models\ServerCustomeTransaction;
 use App\Models\Sku;
+use App\Models\SkuMarketplace;
 use App\Models\PoHeader;
 use App\Models\PoDetail;
 use App\Models\PoImportCsv;
@@ -172,7 +173,8 @@ class IndexController extends Controller
                 $sku->save();
         
                 $wms = new PutSku;
-                $result = $wms->index($sku); 
+                $result = $wms->index($sku);
+                $this->insertSkuMarketplace($array,$sku);
                 if($result["Response"]["return"]["returnCode"] == "0000"){
                     $datas                      = [];
                     $companyFullfilmentCenter   = CompanyFullfilmentCenter::where('company_id',$sku->company_id)->get();
@@ -196,6 +198,22 @@ class IndexController extends Controller
         }
         
         return $res;
+      }
+
+      private function insertSkuMarketplace($datas,$sku){
+        $check = SkuMarketplace::where([['sku_code',$sku->sku_code], ['company_id',$sku->company_id],['marketplace_id','API']])->first();
+        if(!$check){
+            $SkuMarketplace                 = new SkuMarketplace();
+            $SkuMarketplace->sku_code       = $sku->sku_code;
+            $SkuMarketplace->marketplace_id = 'API';
+            $SkuMarketplace->status         = 1;
+            $SkuMarketplace->company_id     = $sku->company_id;
+            $SkuMarketplace->datas          = json_encode($datas);
+            $SkuMarketplace->save();
+        }else{
+            $check->datas          = json_encode($datas);
+            $check->save();
+        }
       }
 
       private function updateSKU($array,$sku){
@@ -487,6 +505,7 @@ class IndexController extends Controller
      */
 
 	public function receiptsPo(){
+        set_time_limit(0);
 	    $directory  = public_path('public/LuxasiaFile/receipts-po');
         $fileName   = 'GR_IB_'.date('dmY_His').'.TXT';
 
@@ -552,5 +571,36 @@ class IndexController extends Controller
     private function updatePoBuffer($id , $update){
         PoBuffer::where('id', $id)->update($update);
     }
+
+    
+    /**
+     * Stock on hand
+     */
+
+	public function stock(){
+        set_time_limit(0);
+
+	    $directory      = public_path('public/LuxasiaFile/stock');
+        $fileName       = 'SOH_IB_'.date('dmY_His').'.TXT';
+        $inventory      = Inventory::where('company_id', $this->company_id)->get();
+        $now            = date('mdY');
+        if(count($inventory) > 0){                
+            // $fp     	= fopen($directory.'/'.$fileName,'w');
+            // $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3\n";
+            $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3<br>";
+            
+            foreach($inventory as $i){
+                $text       .= $now."|Store_id|StorageLocation|".$i->sku_code."|VBN|MANU_DATE|EXPR_DATE|".$i->stock_available."|||<br>";
+            }
+
+            echo $text;
+             // fwrite($fp, $text);
+             // fclose($fp);
+
+        }else{
+            return IndexRes::resultData(200,['message' => 'no data'],[]);
+        }         
+    }
+
 
 }

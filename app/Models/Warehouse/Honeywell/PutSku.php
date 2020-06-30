@@ -32,6 +32,8 @@ class PutSku
 	**  SKU Information
 	*/
     public function index($datas) {
+        set_time_limit(0);
+
         $InterfaceMethod    = 'POST'; 
         $method             = 'putSKUData'; 
         $messageid          = "SKU"; 
@@ -102,6 +104,8 @@ class PutSku
     }
 
     public function updateSku($datas) {
+        set_time_limit(0);
+        
         $InterfaceMethod    = 'POST'; 
         $method             = 'putSKUData'; 
         $messageid          = "SKU"; 
