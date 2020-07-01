@@ -238,7 +238,7 @@ class IndexController extends Controller
 
 
 /**
- * PO function
+ * Replenishment order
  * {
  *   dirname: "E:\project\custome-8commerce\App/public/public/LuxasiaFile/po",
  *   basename: "REPL_OUB_20200608_091802.txt",
@@ -503,7 +503,7 @@ class IndexController extends Controller
     }
 
     /**
-     * PO receipts
+     * Goods receipt
      */
 
 	public function receiptsPo(){
@@ -532,16 +532,17 @@ class IndexController extends Controller
                 $fp     	= fopen($directory.'/'.$fileName,'w');
                 $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3\n";
                 // $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3<br>";
- 
+                $VBN        = 0;
                 foreach($datas as $data){
                     foreach($data["datas"] as $d){
                         $checkSCIpoDetail   = $this->checkSCIpoDetail($d, $data["datas_sci"]);
                         if($checkSCIpoDetail){
-                            $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|".$d["StorageLocation"]."|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||VBN|MANU_DATE|EXPR_DATE|||\n";
-                            // $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|".$d["StorageLocation"]."|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||VBN|MANU_DATE|EXPR_DATE|||<br>";
+                            $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|Available|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||".$VBN."|".date("Ymd")."|".date("Ymd")."|||\n";
+                            // $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|Available|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||VBN|MANU_DATE|EXPR_DATE|||<br>";
                         }else{
                             continue;
                         }
+                        $VBN++;
                     }
 
                     $this->updatePoBuffer($data["id"],['seq' => 5]);
@@ -590,9 +591,10 @@ class IndexController extends Controller
             $fp     	= fopen($directory.'/'.$fileName,'w');
             $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3\n";
             // $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3<br>";
-            
+            $VBN        = 0;
             foreach($inventory as $i){
-                $text       .= $now."|".substr($i->fulfillment_center_id,0,10)."|StorageLocation|".$i->sku_code."|VBN|MANU_DATE|EXPR_DATE|".$i->stock_available."|||\n";
+                $text       .= $now."|".substr($i->fulfillment_center_id,0,10)."|StorageLocation|".$i->sku_code."|".$VBN."|".date("Ymd")."|".date("Ymd")."|".$i->stock_available."|||\n";
+                $VBN++;
             }
 
             // echo $text;
@@ -623,11 +625,12 @@ class IndexController extends Controller
             $fp     	= fopen($directory.'/'.$fileName,'w');
             $text       = "Transaction_Date|Store_id|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|From_StorageLocation|To_StorageLocation|Remarks|Remarks1|Remarks2|Remarks3\n";
             // $text       = "Transaction_Date|Store_id|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|From_StorageLocation|To_StorageLocation|Remarks|Remarks1|Remarks2|Remarks3<br>";
-            
+            $VBN        = 0;
             foreach($order as $o){
                 $Transaction_Date   = date_format(date_create($o->create_time),"Ymd");
                 foreach($o->details as $det){
-                    $text        .= $Transaction_Date."|".substr($o->fulfillment_center_id,0,10)."|".$det->sku_code."|VBN|MANU_DATE|EXPR_DATE|".$det->qty_ship."|From_StorageLocation|To_StorageLocation|Remarks|||\n";
+                    $text        .= $Transaction_Date."|".substr($o->fulfillment_center_id,0,10)."|".$det->sku_code."|".$VBN."|".date("Ymd")."|".date("Ymd")."|".$det->qty_ship."|".substr($o->fulfillment_center_id,0,4)."|".substr($o->fulfillment_center_id,0,4)."|".substr($o->dest_remarks,0,40)."|||\n";
+                    $VBN++;
                 }
 
                 OrderBuffer::create(['order_no' => $o->order_no , 'company_id' => $this->company_id , 'seq' => 10, 'type' => 'row' , 'channel' => 'API' , 'create_time' => date('Y-m-d H:i:s')]);
@@ -678,7 +681,7 @@ class IndexController extends Controller
                 $Sequence = 0;
                 foreach($o->details as $det){
                     $Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
-                    $text        .= "S|".$o->order_no."|".$Sequence."|".$o->order_source."|".substr($o->fulfillment_center_id,0,4)."|".date_format(date_create($o->order_date),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|GST Amount|".substr($this->stringCheck($o->promo_code),0,20)."||".date_format(date_create($o->create_time),"Ymd")."|".date_format(date_create($o->create_time),"His")."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_code,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_cod,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|||\n";
+                    $text        .= "S|".$o->order_no."|".$Sequence."|".$o->order_source."|".substr($o->fulfillment_center_id,0,4)."|".date_format(date_create($o->order_date),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($o->promo_code),0,20)."||".date_format(date_create($o->create_time),"Ymd")."|".date_format(date_create($o->create_time),"His")."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_code,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_cod,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|||\n";
                     $Sequence++;
                 }
 
