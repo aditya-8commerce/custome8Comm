@@ -51,7 +51,7 @@ class InboundAsn
 			$asnReference2 = strtoupper($datas->crossdock_no);
 		}
 		
-        foreach($datas->poDetails as $k=>$row) {
+        foreach($datas->details as $k=>$row) {
             $detailsItem[] = array(
                 "asnLineNo"    => $no, 
                 "customerId"   => strtoupper($datas->company_id), 

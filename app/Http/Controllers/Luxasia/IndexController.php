@@ -36,7 +36,8 @@ use App\Models\Warehouse\Honeywell\InboundAsn;
 
 class IndexController extends Controller
 {
-    public $company_id              = 'ECLUX';
+    // public $company_id              = 'ECLUX';
+    public $company_id              = 'RBIZ_TEST';
     public $fulfillment_center_id   = 'WHCPT01';
 
 
@@ -46,7 +47,7 @@ class IndexController extends Controller
     
 
 	public function index(){
-        return IndexRes::resultData(200,['message' => 'API Custome 8commerce for Luxasia'],[]);
+        return IndexRes::resultData(200,['message' => 'API Custome 8commerce for Luxasia '.$this->company_id],[]);
     }
 
 /**
@@ -54,7 +55,7 @@ class IndexController extends Controller
  */
 
 	public function sku(){
-		$directory = public_path('public/LuxasiaFile/sku');
+		$directory = public_path('LuxasiaFile/sku');
 		$files = File::allFiles($directory); 
 		if(count($files) > 0){
 			foreach($files as $path){
@@ -103,9 +104,6 @@ class IndexController extends Controller
                             echo json_encode($res);
                         }else{
                             ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($res), 'ERROR' , $current_line,'/',$this->company_id);
-                            $subject    = 'Luxasia SKU Integration';
-                            $content    = 'Data not insert.<br><br>'.json_encode($dd);
-                            ApiLog::sendEmail($subject,$content);
                         }
                     }
                     $x++;
@@ -115,7 +113,6 @@ class IndexController extends Controller
                
                $uuid	= Uuid::uuid4()->toString();
                ApiLog::insertOrderBuffer($this->company_id,$uuid,"", 'sku',1,"custome" , json_encode($all_rows),'');
-                // dd($file);
                 unlink($file['dirname'].'/'.$name);
 			   
 		   }else{
@@ -125,7 +122,7 @@ class IndexController extends Controller
 
     private function insertSKU($array){
         if(!empty(@$array['ARTICLE CODE'])){
-            $check =  Sku::where([['sku_code',$array['ARTICLE CODE'],['company_id',$this->company_id]]])->first();
+            $check =  Sku::where([['sku_code','=',$array['ARTICLE CODE']],['company_id','=',$this->company_id]])->first();
             if($check){
                 $check->sku_description = $array['DESCRIPTION'];
                 $check->price 			= $array['RETAIL PRICE'];
@@ -137,6 +134,10 @@ class IndexController extends Controller
                 if($result["Response"]["return"]["returnCode"] == "0000"){
                     $res = ['status' => 200 , 'message' =>['message' => $result["Response"]["return"]["returnDesc"]], 'errors' => []];
                 }else{
+                    $subject    = 'Luxasia SKU Integration';
+                    $content    = 'Data not insert to WMS.<br><br>'.json_encode($array);
+                    ApiLog::sendEmail($subject,$content);
+					
                     $res = ['status' => 402 , 'message' =>[], 'errors' => $result];
                 }
 
@@ -193,10 +194,16 @@ class IndexController extends Controller
                     }
                     $res = ['status' => 200 , 'message' =>['message' => $result["Response"]["return"]["returnDesc"]], 'errors' => []];
                 }else{
+                    $subject    = 'Luxasia SKU Integration';
+                    $content    = 'Data not insert to WMS.<br><br>'.json_encode($array);
+                    ApiLog::sendEmail($subject,$content);
                     $res = ['status' => 402 , 'message' =>[], 'errors' => $result];
                 }
             }
         }else{
+            $subject    = 'Luxasia SKU Integration';
+            $content    = 'sku code blank.<br><br>'.json_encode($array);
+            ApiLog::sendEmail($subject,$content);
             $res = ['status' => 402 , 'message' =>[], 'errors' => ['message' => 'sku code blank']];
         }
         
@@ -219,16 +226,6 @@ class IndexController extends Controller
         }
       }
 
-      private function updateSKU($array,$sku){
-		$sku->sku_description 	= $array[1];
-		$sku->price 			= $array[15];
-        $sku->sku_short_description 		= $array[10];
-        $sku->update(['sku_id',$sku->sku_id]);
-		$wms = new PutSku;
-		$res = $wms->index($sku,'update'); 
-        return $res;
-      }
-
 
     private function cleanString($string){
         $string = trim(preg_replace('/\s+/', ' ', $string));
@@ -241,7 +238,7 @@ class IndexController extends Controller
 /**
  * Replenishment order
  * {
- *   dirname: "E:\project\custome-8commerce\App/public/public/LuxasiaFile/po",
+ *   dirname: "E:\project\custome-8commerce\App/public/public/LuxasiaFile/replenishment",
  *   basename: "REPL_OUB_20200608_091802.txt",
  *   extension: "txt",
  *   filename: "REPL_OUB_20200608_091802"
@@ -249,7 +246,7 @@ class IndexController extends Controller
  */
 
 	public function po(){
-		$directory = public_path('public/LuxasiaFile/po');
+		$directory = public_path('LuxasiaFile/replenishment');
 		$files = File::allFiles($directory); 
 		if(count($files) > 0){
 			foreach($files as $path){
@@ -269,8 +266,6 @@ class IndexController extends Controller
             $string 	= '';
             $x      	= 0;
             
-            // $fread = fread($fp,filesize($file['dirname'].'/'.$name));
-            // echo $fread;
          
              $datasRows  = array();
              $header     = array();
@@ -313,6 +308,7 @@ class IndexController extends Controller
                     $datas_sci  = $this->poStructure($t);
 
                     $all_rows[] = ['company_id' => $this->company_id , 'po_no' => $t->po_no , 'type' => 'row' , 'seq' => 1 , 'channel' => 'api' , 'datas' => $datas , 'datas_sci' => $datas_sci , 'create_time' => date('Y-m-d H:i:s')] ;
+					
                 }
 
                 
@@ -322,13 +318,21 @@ class IndexController extends Controller
             
             if(count($all_rows) > 0){
                 foreach($all_rows as $row){
-                    $this->insertPoBuffer($row);
-                    $this->insertPoData($row);
+                    $res = $this->insertPoData($row);
+					if($res["status"] == "200"){
+                            echo json_encode($res);
+                    }else{
+                       ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($res), 'ERROR' , $current_line,'/',$this->company_id);
+                    }
                 }
             }
-            ApiLog::insertLog('Controllers\Luxasia\IndexController\po','production',$name, 'INFO' , $string,'/luxasia/po');           
-            unlink($file['dirname'].'/'.$name);
+			
             
+			$uuid	= Uuid::uuid4()->toString();
+            ApiLog::insertOrderBuffer($this->company_id,$uuid,"", 'po',1,"custome" , $string,json_encode($all_rows));
+			
+            unlink($file['dirname'].'/'.$name);
+			
         }else{
             return IndexRes::resultData(402,['message' => 'extension file not allowed'],[]);
         }
@@ -337,8 +341,10 @@ class IndexController extends Controller
 
     
     private function insertPoData($datas){
-        $check      = PoHeader::where([['company_id' , $datas["company_id"]], ['po_no' , $datas["po_no"]]])->first();
-        if(!$check) {
+        $check      = PoHeader::where([['company_id', '=' , $datas["company_id"]], ['po_no', '=' , $datas["po_no"]]])->first();
+        if($check) {
+           $res = ['status' => 402 , 'message' =>[], 'errors' => ['message' => $check]];	
+        }else{
             $po             = new PoHeader;
             $po->po_type    = $datas["datas_sci"]["header"]["po_type"];
             $po->po_no      = $datas["datas_sci"]["header"]["po_no"];
@@ -389,7 +395,8 @@ class IndexController extends Controller
                 $poDetail->remarks          = $detail["remarks"];
                 $poDetail->save();
             }
-
+			
+			
             $poTracking                   = new PoStatusTracking;
             $poTracking->po_header_id     = $id;
             $poTracking->po_no            = $datas["datas_sci"]["header"]["po_no"];
@@ -398,7 +405,34 @@ class IndexController extends Controller
             $poTracking->remarks          = '';
             $poTracking->create_by        = 'API';
             $poTracking->save();
-        }
+			
+			 $wms = new InboundAsn;
+             $result = $wms->index($po);
+             if($result["Response"]["return"]["returnCode"] == "0000"){
+                $po->status     = "new";
+				$po->save();
+				
+				$poTracking                   = new PoStatusTracking;
+				$poTracking->po_header_id     = $id;
+				$poTracking->po_no            = $datas["datas_sci"]["header"]["po_no"];
+				$poTracking->status           = "new";
+				$poTracking->system           = 'OMS';
+				$poTracking->remarks          = '';
+				$poTracking->create_by        = 'API';
+				$poTracking->save();
+				
+				$res = ['status' => 200 , 'message' =>['message' => $result["Response"]["return"]["returnDesc"]], 'errors' => []];
+             }else{
+				$subject    = 'Luxasia PO Integration';
+                $content    = 'Data not insert to WMS.<br><br>'.json_encode($datas);
+                ApiLog::sendEmail($subject,$content);
+				
+				$res = ['status' => 402 , 'message' =>[], 'errors' => $result];
+            }
+
+			$this->insertPoBuffer($datas);
+		}
+		return $res;
     }
 
  
@@ -509,7 +543,7 @@ class IndexController extends Controller
 
 	public function receiptsPo(){
         set_time_limit(0);
-	    $directory  = public_path('public/LuxasiaFile/receipts-po');
+	    $directory  = public_path('LuxasiaFile/receipts-po');
         $fileName   = 'GR_IB_'.date('dmY_His').'.TXT';
 
         $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->get();
@@ -584,7 +618,7 @@ class IndexController extends Controller
 	public function stock(){
         set_time_limit(0);
 
-	    $directory      = public_path('public/LuxasiaFile/stock');
+	    $directory      = public_path('LuxasiaFile/stock');
         $fileName       = 'SOH_IB_'.date('dmY_His').'.TXT';
         $inventory      = Inventory::where('company_id', $this->company_id)->get();
         $now            = date('mdY');
@@ -615,7 +649,7 @@ class IndexController extends Controller
 	public function stockTransfer(){
         set_time_limit(0);
 
-	    $directory      = public_path('public/LuxasiaFile/stock');
+	    $directory      = public_path('LuxasiaFile/stock');
         $fileName       = 'TR_IB_'.date('dmY_His').'.TXT';
         $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 10],['type','row']])->get()->toArray();
         $arrNo          = $this->getValueFromBuffer($buffer);
@@ -665,7 +699,7 @@ class IndexController extends Controller
 	public function so(){
         set_time_limit(0);
 
-	    $directory      = public_path('public/LuxasiaFile/so');
+	    $directory      = public_path('LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_His').'.TXT';
         $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 11],['type','row']])->get()->toArray();
         $arrNo          = $this->getValueFromBuffer($buffer);
