@@ -16,6 +16,7 @@
         "phpoffice/phpexcel": "^1.8",
         "phpoffice/phpspreadsheet": "^1.9",
         "predis/predis": "^1.1",
+        "ramsey/uuid": "^4.1",
         "tibonilab/pdf-lumen-bundle": "^2.0"
     },
     "require-dev": {

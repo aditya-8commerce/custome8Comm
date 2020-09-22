@@ -9,6 +9,7 @@ use App\Models\ApiLog;
 use App\Models\OrderHeader;
 use App\Models\OrderStatusTracking;
 use App\Models\Courier;
+use App\Models\OrderBuffer;
 use App\Models\Log;
 use App\Models\Couriers\Wahana;
 use App\Models\Couriers\Tiki;
@@ -40,10 +41,26 @@ class ApiLogController extends Controller
 
         ApiLog::create($insert);
 	}
+
+	public static function insertOrderBuffer($company_id,$order_no,$shop_id,$type,$seq,$channel,$datas,$datas_sci){
+		$insert = [
+            'company_id'    => $company_id,
+            'order_no'     	=> $order_no,
+            'shop_id'     	=> $shop_id,
+            'type'       	=> $type,
+            'seq'     		=> $seq,
+            'channel'       => $channel,
+            'datas'         => $datas,
+            'datas_sci'  	=> $datas_sci,
+            'create_time'  	=> date('Y-m-d h:i:s')
+        ];
+
+        OrderBuffer::create($insert);
+	}
 	
     public static function sendEmail($subject,$content,$attachment=array()){
-        // $to = array('nugroho.aditya@8commerce.com','operation@8commerce.com','it@8commerce.com');
-        $to = array('nugroho.aditya@8commerce.com');
+        $to = array('nugroho.aditya@8commerce.com','operation@8commerce.com','it@8commerce.com');
+        // $to = array('nugroho.aditya@8commerce.com');
             Mail::to($to)->send(new OmsEmailNotification($subject,$content ,$attachment));
             try {
                 return response()->json("Email Sent!");

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use PDF;
 use PHPExcel; 
 use PHPExcel_IOFactory;
+use Ramsey\Uuid\Uuid;
 
 use App\Http\Controllers\ApiLogController as ApiLog;
 use App\Res\IndexRes;
@@ -35,7 +36,7 @@ use App\Models\Warehouse\Honeywell\InboundAsn;
 
 class IndexController extends Controller
 {
-    public $company_id              = 'RBIZ_TEST';
+    public $company_id              = 'ECLUX';
     public $fulfillment_center_id   = 'WHCPT01';
 
 
@@ -112,8 +113,8 @@ class IndexController extends Controller
 
                fclose($fp);
                
-               
-               ApiLog::insertLog('Controllers\Luxasia\IndexController\sku','production',$name, 'INFO' , json_encode($all_rows),'/luxasia/sku');
+               $uuid	= Uuid::uuid4()->toString();
+               ApiLog::insertOrderBuffer($this->company_id,$uuid,"", 'sku',1,"custome" , json_encode($all_rows),'');
                 // dd($file);
                 unlink($file['dirname'].'/'.$name);
 			   
