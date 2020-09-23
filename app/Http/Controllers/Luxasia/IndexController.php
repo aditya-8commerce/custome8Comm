@@ -341,7 +341,7 @@ class IndexController extends Controller
 
     
     private function insertPoData($datas){
-        $check      = PoHeader::where([['company_id', '=' , $datas["company_id"]], ['po_no', '=' , $datas["po_no"]]])->first();
+        $check      = PoHeader::where([['company_id', '=' , $datas["company_id"]], ['po_no', '=' , $datas["po_no"]], ["status","<>","cancelled"]])->first();
         if($check) {
            $res = ['status' => 402 , 'message' =>[], 'errors' => ['message' => $check]];	
         }else{
@@ -464,7 +464,7 @@ class IndexController extends Controller
         $po->eta_date 	        = date('Y-m-d', strtotime(date('Y-m-d'). ' + 2 days'));
         $po->vehicle_no 	    = '-';
         $po->driver_name 	    = '-';
-        $po->ori_name    	    = 'LUXASIA';
+        $po->ori_name    	    = strtoupper($array['VENDOR_NAME']);
         $po->ori_address1 	    = strtoupper($array['VENDOR_ADDRESS']);
         $po->ori_address2  	    = '-';
         $po->ori_province       = '-';
@@ -476,13 +476,18 @@ class IndexController extends Controller
         $po->ori_remarks        = '-';
         $po->ori_country        = '-';
         $po->sku_code           = strtoupper($array['ItemCode']);
-        $po->qty_order          = $this->stringToInterger($array['Qty']);
+        $po->qty_order          = $this->stringToInterger2($array['Qty']);
         $po->sku_remarks        = '-';
         $po->save();
     }
     
 	private function stringToInterger($string){
 		return preg_replace('/[^0-9]/', '', $string);
+    }
+    
+	private function stringToInterger2($string){
+		$explode = explode(".", $string);
+		return $explode[0];
     }
     
     private function poDatas($buffer , $datas){
@@ -517,9 +522,11 @@ class IndexController extends Controller
         foreach($gets as $get){
             $sku        = Sku::where('sku_code',$get->sku_code)->first();
             if($sku){
-                $details[]  = ['sku_code' => $sku->sku_code , 'sku_description' => $sku->sku_description ,'qty_order' => $get->qty_order , 'price' => $sku->price , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => 'draft'];
+				// $amount_order =	$get->qty_order * $sku->price;
+				
+                $details[]  = ['sku_code' => $sku->sku_code , 'sku_description' => $sku->sku_description ,'qty_order' => $get->qty_order , 'price' => 0 , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => ''];
             }else{
-                $details[]  = ['sku_code' => $get->sku_code , 'sku_description' => 'sku not found' ,'qty_order' => $get->qty_order , 'price' => 0 , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => 'draft'];
+                $details[]  = ['sku_code' => $get->sku_code , 'sku_description' => 'sku not found' ,'qty_order' => $get->qty_order , 'price' => 0 , 'amount_order' => 0 , 'remarks' => $get->sku_remarks , 'status' => ''];
                 ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($get), 'ERROR' ,'sku not found','/',$this->company_id);
                 $subject    = 'Luxasia PO Integration';
                 $content    = 'sku not found .<br><br>'.json_encode($get);
@@ -533,9 +540,6 @@ class IndexController extends Controller
 
     }
     
-    private function insertPO($datas){
-        return $datas;
-    }
 
     /**
      * Goods receipt
@@ -543,12 +547,10 @@ class IndexController extends Controller
 
 	public function receiptsPo(){
         set_time_limit(0);
-	    $directory  = public_path('LuxasiaFile/receipts-po');
-        $fileName   = 'GR_IB_'.date('dmY_His').'.TXT';
+	    $directory  = public_path('LuxasiaFile/receipt');
+        $fileName   = 'GR_IB_'.date('dmY_Hi').'.TXT';
 
         $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->get();
-        // $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->toSql();
-        // dd($bufferDatas);
         if(count($bufferDatas) > 0){
             $datas  = [];
 
@@ -618,8 +620,8 @@ class IndexController extends Controller
 	public function stock(){
         set_time_limit(0);
 
-	    $directory      = public_path('LuxasiaFile/stock');
-        $fileName       = 'SOH_IB_'.date('dmY_His').'.TXT';
+	    $directory      = public_path('LuxasiaFile/inventory_balance');
+        $fileName       = 'SOH_IB_'.date('dmY_Hi').'.TXT';
         $inventory      = Inventory::where('company_id', $this->company_id)->get();
         $now            = date('mdY');
         if(count($inventory) > 0){                
@@ -649,8 +651,8 @@ class IndexController extends Controller
 	public function stockTransfer(){
         set_time_limit(0);
 
-	    $directory      = public_path('LuxasiaFile/stock');
-        $fileName       = 'TR_IB_'.date('dmY_His').'.TXT';
+	    $directory      = public_path('LuxasiaFile/stock_transfer');
+        $fileName       = 'TR_IB_'.date('dmY_Hi').'.TXT';
         $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 10],['type','row']])->get()->toArray();
         $arrNo          = $this->getValueFromBuffer($buffer);
         $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','transfer_outbound'],['status','shipped']])->whereNotIn('order_no', $arrNo)->with('details')->get();
@@ -700,7 +702,7 @@ class IndexController extends Controller
         set_time_limit(0);
 
 	    $directory      = public_path('LuxasiaFile/so');
-        $fileName       = 'SALES_IB_'.date('dmY_His').'.TXT';
+        $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
         $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 11],['type','row']])->get()->toArray();
         $arrNo          = $this->getValueFromBuffer($buffer);
         $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereNotIn('order_no', $arrNo)->with('details')->get();

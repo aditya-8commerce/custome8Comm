@@ -6,6 +6,7 @@ use Ramsey\Uuid\Uuid;
 
 use App\Models\Warehouse\Honeywell\PutSku;
 use App\Models\Sku;
+use App\Models\PoHeader;
 
 class IndexController extends Controller
 {
@@ -48,8 +49,12 @@ error status code
 	} 
 	
 	public function coba(){ 
-               $uuid	= Uuid::uuid4()->toString();
-			   echo $uuid;
+       $check      = PoHeader::where([['company_id', '=' , 'RBIZ_TEST'], ['po_no', '=' , '2400000059'], ["status","<>","cancelled"]])->first();
+        if($check) {
+           echo 'ada';
+        }else{
+			echo 'tidak';
+		}
 	} 
 	
 }
