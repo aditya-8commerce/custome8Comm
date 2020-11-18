@@ -30,14 +30,14 @@ use App\Models\CompanyFullfilmentCenter;
 use App\Models\Inventory;
 use App\Models\FulfillmentCenter;
 use App\Models\OrderHeader;
+use App\Models\CustomeBuffer;
 use App\Models\Warehouse\Honeywell\PutSku;
 use App\Models\Warehouse\Honeywell\InboundAsn;
 
 
 class IndexController extends Controller
 {
-    // public $company_id              = 'ECLUX';
-    public $company_id              = 'RBIZ_TEST';
+    public $company_id              = 'ECLUXASIA';
     public $fulfillment_center_id   = 'WHCPT01';
 
 
@@ -161,7 +161,7 @@ class IndexController extends Controller
                 $sku->conv_pallet 		= 0;
                 $sku->category_id 		= 1;
                 $sku->image		 		= '';
-                $sku->sku_short_description = '';
+                $sku->sku_short_description = strtoupper($array['STORE ID']);
                 $sku->net_weight 		= 1;
                 $sku->cube 				= 1;
                 $sku->is_shelf_life		= 1;
@@ -567,22 +567,20 @@ class IndexController extends Controller
                 // echo json_encode($datas);
      
                 $fp     	= fopen($directory.'/'.$fileName,'w');
-                $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3\n";
-                // $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3<br>";
+                $text       = "Order_type|Inbound_order|Inbound_item|Store_id|StorageLocation|ItemCode|Qty|UOM|PO_NUMBER|PO_ITEM|DELIV_DATE|HEADER_TEXT|ITEM_TEXT|VBN|MANU_DATE|EXPR_DATE|Remarks1|Remarks2|Remarks3";
                 $VBN        = 0;
                 foreach($datas as $data){
                     foreach($data["datas"] as $d){
                         $checkSCIpoDetail   = $this->checkSCIpoDetail($d, $data["datas_sci"]);
                         if($checkSCIpoDetail){
-                            $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|Available|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||".$VBN."|".date("Ymd")."|".date("Ymd")."|||\n";
-                            // $text       .= $d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|Available|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."|||VBN|MANU_DATE|EXPR_DATE|||<br>";
+                            $text       .= "\n".$d["Order_type"]."|".$d["Inbound_order"]."|".$d["Inbound_item"]."|".$d["Store_id"]."|Available|".$d["ItemCode"]."|".$checkSCIpoDetail["qty_received"]."|".$d["UOM"]."|".$d["PO_NUMBER"]."|".$d["PO_ITEM"]."|".$d["DELIV_DATE"]."||||||||";
                         }else{
                             continue;
                         }
                         $VBN++;
                     }
 
-                    $this->updatePoBuffer($data["id"],['seq' => 5]);
+                    $this->updatePoBuffer($data["id"],['seq' => 10]);
                 }
 
             //    echo $text;
@@ -615,7 +613,7 @@ class IndexController extends Controller
     
     /**
      * Stock on hand
-     */
+     
 
 	public function stock(){
         set_time_limit(0);
@@ -626,11 +624,10 @@ class IndexController extends Controller
         $now            = date('mdY');
         if(count($inventory) > 0){                
             $fp     	= fopen($directory.'/'.$fileName,'w');
-            $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3\n";
-            // $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3<br>";
+            $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3";
             $VBN        = 0;
             foreach($inventory as $i){
-                $text       .= $now."|".substr($i->fulfillment_center_id,0,10)."|StorageLocation|".$i->sku_code."|".$VBN."|".date("Ymd")."|".date("Ymd")."|".$i->stock_available."|||\n";
+                $text       .= "\n".$now."|".substr($i->fulfillment_center_id,0,10)."|StorageLocation|".$i->sku_code."||||".$i->stock_available."|||";
                 $VBN++;
             }
 
@@ -642,11 +639,11 @@ class IndexController extends Controller
             return IndexRes::resultData(200,['message' => 'no data'],[]);
         }         
     }
-
+*/
 
     /**
      * Stock Transfer
-     */
+     
 
 	public function stockTransfer(){
         set_time_limit(0);
@@ -692,7 +689,7 @@ class IndexController extends Controller
 
         return $res;
     }
-
+*/
     
     /**
      * Sales Transaction
@@ -700,29 +697,34 @@ class IndexController extends Controller
 
 	public function so(){
         set_time_limit(0);
-
+		
+		$yesterday		= date('Y-m-d',strtotime("-1 days"));
 	    $directory      = public_path('LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 11],['type','row']])->get()->toArray();
-        $arrNo          = $this->getValueFromBuffer($buffer);
-        $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereNotIn('order_no', $arrNo)->with('details')->get();
+        $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->with('details')->get();
         $now            = date('mdY');
 
   
         if(count($order) > 0){                
             $fp     	= fopen($directory.'/'.$fileName,'w');
-            $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3\n";
-            // $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3<br>";
+            $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
             
             foreach($order as $o){
-                $Sequence = 0;
-                foreach($o->details as $det){
-                    $Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
-                    $text        .= "S|".$o->order_no."|".$Sequence."|".$o->order_source."|".substr($o->fulfillment_center_id,0,4)."|".date_format(date_create($o->order_date),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($o->promo_code),0,20)."||".date_format(date_create($o->create_time),"Ymd")."|".date_format(date_create($o->create_time),"His")."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_code,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_cod,0,10)."|".substr($o->dest_city,0,20)."|".substr($o->dest_country,0,2)."|".substr($this->stringCheck($o->dest_remarks),0,50)."|||\n";
-                    $Sequence++;
-                }
+				$checkBuffer	= CustomeBuffer::where(['order_no' => $o->order_no , 'company_id' => $this->company_id])->first();
+				if($checkBuffer){
+					continue;
+				}else{
+					$Sequence = 0;
+					foreach($o->details as $det){
+						$Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
+						$text        .= "\nS|".$o->order_no."|".$Sequence."|".$o->order_source."|0056|".date_format(date_create($o->order_date),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($o->promo_code),0,20)."||".date_format(date_create($o->create_time),"Ymd")."|".date_format(date_create($o->create_time),"His")."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_code,0,10)."|".substr($o->dest_city,0,20)."|ID|".substr($this->stringCheck($o->dest_remarks),0,50)."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_cod,0,10)."|".substr($o->dest_city,0,20)."|ID|".substr($this->stringCheck($o->dest_remarks),0,50)."|||";
+						$Sequence++;
+					
+					}
 
-                OrderBuffer::create(['order_no' => $o->order_no , 'company_id' => $this->company_id , 'seq' => 11, 'type' => 'row' , 'channel' => 'API' , 'create_time' => date('Y-m-d H:i:s')]);
+					CustomeBuffer::create(['order_no' => $o->order_no , 'company_id' => $this->company_id , 'seq' => 1, 'type' => 'order']);
+				}
+				
             }
 
             // echo $text;
@@ -736,7 +738,7 @@ class IndexController extends Controller
 
     private function checkPrice($price){
         $res = 0;
-        if(!isset($price) || trim($price) === ''){
+        if(isset($price) || trim($price) === ''){
             $res    = $price;
         }
         
