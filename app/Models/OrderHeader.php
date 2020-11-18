@@ -41,10 +41,10 @@ class OrderHeader extends Model
     }
 
     public function courier(){
-        return $this->hasOne('App\Models\Courier','courier_id','courier_id');
+        return $this->belongsTo('App\Models\Courier','courier_id','courier_id');
     }
 
     public function fulfillmentCenter(){
-        return $this->hasOne('App\Models\FulfillmentCenter','fulfillment_center_id','fulfillment_center_id');
+        return $this->belongsTo('App\Models\FulfillmentCenter','fulfillment_center_id','fulfillment_center_id');
     }
 }

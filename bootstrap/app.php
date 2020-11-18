@@ -115,6 +115,7 @@ $app->routeMiddleware([
 | can respond to, as well as the controllers that may handle them.
 |
 */
+app('translator')->setLocale(env('APP_LOCALE', 'en'));
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
