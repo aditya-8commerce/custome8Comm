@@ -63,7 +63,7 @@ class IndexController extends Controller
 				$tripTracking->trip_id      = $check->trip_id;
 				$tripTracking->save();
             }
-            return IndexRes::resultData(200,$check,[]);
+             return IndexRes::resultData(200,['message' => 'Login Successfully', 'data' => $request->trip_id],[]);
         }else{
             return IndexRes::resultData(422,[], ['message' => 'Data Not Found']);
         }
