@@ -86,7 +86,7 @@ class IndexController extends Controller
         $order_no     		= $request->order_no;
         $dest_name     		= $request->dest_name;
 
-        $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_id' , $tripId)->orderBy($sort_field,$sort_type);
+        $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_id' , $tripId)->whereIn('status',['new','started'])->orderBy($sort_field,$sort_type);
 
         if ($order_no) {
             $like = "%{$order_no}%";
