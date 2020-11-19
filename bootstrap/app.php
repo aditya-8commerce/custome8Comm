@@ -76,6 +76,9 @@ $app->alias('mailer', \Illuminate\Contracts\Mail\MailQueue::class);
 
 
 
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
+]);
 $app->routeMiddleware([
     'AccessMarketplace' => App\Http\Middleware\AccessMarketplaceMiddleware::class,
     'AccessCourier'     => App\Http\Middleware\AccessCourierMiddleware::class,
