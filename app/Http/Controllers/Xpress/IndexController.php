@@ -70,6 +70,15 @@ class IndexController extends Controller
     }
 
 
+	public function detailTripOrder($tripDetailId){
+		$query  = TripDetails::with(['tripHeader','order.details'])->where('trip_detail_id' , $tripDetailId)->whereIn('status',['new','started'])->first();
+		if($query){
+			return IndexRes::resultData(200,$query,[]);
+		}else{
+			return IndexRes::resultData(422,[],["message" =>'data not found']);
+		}
+	}
+	
 	public function SearchOrder(Request $request , $tripId){
         $sort_field         = "trip_detail_id";
         $sort_type          = "DESC";
