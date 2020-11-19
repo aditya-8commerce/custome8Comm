@@ -23,14 +23,17 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('so',['as' => 'luxasiaSo','uses' => 'IndexController@so']);
 
 	});
+	
+
+	$router->group(['prefix' => 'xpress', 'namespace' => 'Xpress'], function () use ($router) {
+		
+		$router->get('/',['as' => 'xpressIndex','uses' => 'IndexController@index']);
+		$router->post('/login',['as' => 'xpressLogin','uses' => 'IndexController@login']);
+		$router->get('/search-order/{tripId}',['as' => 'xpressSearchOrder','uses' => 'IndexController@SearchOrder']);
+		$router->post('/update-status/{tripDetailId}',['as' => 'xpressUpdateStatus','uses' => 'IndexController@updateStatus']);
+
+	});
+
+
 });
  
-
-$router->group(['prefix' => 'xpress', 'namespace' => 'Xpress'], function () use ($router) {
-	
-    $router->get('/',['as' => 'xpressIndex','uses' => 'IndexController@index']);
-    $router->post('/login',['as' => 'xpressLogin','uses' => 'IndexController@login']);
-    $router->get('/search-order/{tripId}',['as' => 'xpressSearchOrder','uses' => 'IndexController@SearchOrder']);
-    $router->post('/update-status/{tripDetailId}',['as' => 'xpressUpdateStatus','uses' => 'IndexController@updateStatus']);
-
-});
