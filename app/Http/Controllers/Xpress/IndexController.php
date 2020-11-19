@@ -75,6 +75,7 @@ class IndexController extends Controller
         $sort_type          = "DESC";
         $perPage        	= $request->per_page;
         $order_no     		= $request->order_no;
+        $dest_name     		= $request->dest_name;
 
         $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_id' , $tripId)->orderBy($sort_field,$sort_type);
 
@@ -82,6 +83,13 @@ class IndexController extends Controller
             $like = "%{$order_no}%";
             $query = $query->whereHas('order', function($query) use ($like){
                 $query->where('order_no', 'LIKE', $like);
+            });
+        }
+		
+        if ($dest_name) {
+            $like = "%{$dest_name}%";
+            $query = $query->whereHas('order', function($query) use ($like){
+                $query->where('dest_name', 'LIKE', $like);
             });
         }
 
