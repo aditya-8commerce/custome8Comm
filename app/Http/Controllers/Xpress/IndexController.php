@@ -65,7 +65,7 @@ class IndexController extends Controller
             }
             return IndexRes::resultData(200,$check,[]);
         }else{
-            return IndexRes::resultData(422,[], ['messages' => 'Data Not Found']);
+            return IndexRes::resultData(422,[], ['message' => 'Data Not Found']);
         }
     }
 
@@ -100,7 +100,7 @@ class IndexController extends Controller
         );
 
             if($validator->fails()){
-                return IndexRes::resultData(422,[],["messages" => $validator->errors()]);
+                return IndexRes::resultData(422,[],["message" => $validator->errors()]);
             }else{
                 $check  = TripDetails::with(['tripHeader','order.details'])->where('trip_detail_id' , $tripDetailId)->first();
                 if($check){
@@ -185,10 +185,10 @@ class IndexController extends Controller
                         ]);
                         return IndexRes::resultData(200,['message' => 'update successfully'],[]);
                     }else{
-                        return IndexRes::resultData(422,[],["messages" =>'status not found']);
+                        return IndexRes::resultData(422,[],["message" =>'status not found']);
                     }
                 }else{
-                    return IndexRes::resultData(422,[],["messages" =>'data not found']);
+                    return IndexRes::resultData(422,[],["message" =>'data not found']);
                 }
             }
     }
