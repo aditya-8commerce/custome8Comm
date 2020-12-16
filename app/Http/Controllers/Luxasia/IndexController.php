@@ -161,7 +161,7 @@ class IndexController extends Controller
                 $sku->conv_pallet 		= 0;
                 $sku->category_id 		= 1;
                 $sku->image		 		= '';
-                $sku->sku_short_description = strtoupper($array['STORE ID']);
+                $sku->sku_short_description = strtoupper(@$array['BRAND DESCRIPTION']);
                 $sku->net_weight 		= 1;
                 $sku->cube 				= 1;
                 $sku->is_shelf_life		= 1;
