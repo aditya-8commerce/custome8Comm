@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
       \Laravelista\LumenVendorPublish\VendorPublishCommand::class,
-      Commands\Shopee\ShopeeGetOrders::class,
+      Commands\Luxasia\LuxasiaSkuSync::class, // luxasia
     ];
 	
 
@@ -26,8 +26,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-      // get orders shopee
-      $schedule->command('ShopeeGetOrders:sender')->everyMinute();
+      $schedule->command('LuxasiaSkuSync:sender')->hourly();  // luxasia
 
     }
  
