@@ -21,6 +21,7 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('stock',['as' => 'luxasiaStock','uses' => 'IndexController@stock']);
 		$router->get('stock-transfer',['as' => 'luxasiaStockTransfer','uses' => 'IndexController@stockTransfer']);
 		$router->get('so',['as' => 'luxasiaSo','uses' => 'IndexController@so']);
+		$router->get('so-return',['as' => 'luxasiaSo','uses' => 'IndexController@soReturn']);
 
 	});
 	

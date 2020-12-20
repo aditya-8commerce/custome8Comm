@@ -23,7 +23,7 @@ class CustomeBuffer extends Model
 
     protected $table        = 'tbl_custome_buffer';
     protected $primaryKey   = 'id';
-    protected $fillable     = array('order_no','company_id','type','seq');
+    protected $fillable     = array('order_no','company_id','type','seq','sku_code','reason','additional_reason','stock_hold');
     public $timestamps      = true;
   
 }

@@ -246,13 +246,14 @@ class IndexController extends Controller
  */
 
 	public function po(){
-		$directory = public_path('LuxasiaFile/replenishment');
-		$files = File::allFiles($directory); 
+        set_time_limit(0);
+		$directory = base_path('public/Test');
+        $files = File::allFiles($directory); 
+        
 		if(count($files) > 0){
 			foreach($files as $path){
 				$file 		= pathinfo($path);
                 $fileName	= $file['basename'];
-                
 				return $this->checkPOFile($file,$fileName);
 			}
 		}else{
@@ -261,6 +262,7 @@ class IndexController extends Controller
     }
 
     private function checkPOFile($file,$name){
+
         if(strtolower($file['extension']) == 'txt'){
             $fp     	= fopen($file['dirname'].'/'.$name,'r');
             $string 	= '';
@@ -318,12 +320,13 @@ class IndexController extends Controller
             
             if(count($all_rows) > 0){
                 foreach($all_rows as $row){
-                    $res = $this->insertPoData($row);
-					if($res["status"] == "200"){
-                            echo json_encode($res);
-                    }else{
-                       ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($res), 'ERROR' , $current_line,'/',$this->company_id);
-                    }
+                    $this->insertPoBuffer($row);
+                    // $res = $this->insertPoData($row);
+					// if($res["status"] == "200"){
+                    //         echo json_encode($res);
+                    // }else{
+                    //    ApiLog::insertLog('Controllers\Luxasia\IndexController','production',json_encode($res), 'ERROR' , $current_line,'/',$this->company_id);
+                    // }
                 }
             }
 			
@@ -336,7 +339,6 @@ class IndexController extends Controller
         }else{
             return IndexRes::resultData(402,['message' => 'extension file not allowed'],[]);
         }
-
     }
 
     
@@ -547,7 +549,7 @@ class IndexController extends Controller
 
 	public function receiptsPo(){
         set_time_limit(0);
-	    $directory  = public_path('LuxasiaFile/receipt');
+	    $directory  = base_path('public/LuxasiaFile/receipt');
         $fileName   = 'GR_IB_'.date('dmY_Hi').'.TXT';
 
         $bufferDatas    = PoBuffer::where('company_id', $this->company_id)->whereIn('seq',[1,2,3])->get();
@@ -613,12 +615,11 @@ class IndexController extends Controller
     
     /**
      * Stock on hand
-     
+    */
 
 	public function stock(){
-        set_time_limit(0);
-
-	    $directory      = public_path('LuxasiaFile/inventory_balance');
+         set_time_limit(0);
+	    $directory      = base_path('public/LuxasiaFile/inventory_balance');
         $fileName       = 'SOH_IB_'.date('dmY_Hi').'.TXT';
         $inventory      = Inventory::where('company_id', $this->company_id)->get();
         $now            = date('mdY');
@@ -627,31 +628,60 @@ class IndexController extends Controller
             $text       = "Transaction_Date|Store_id|StorageLocation|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|Remarks1|Remarks2|Remarks3";
             $VBN        = 0;
             foreach($inventory as $i){
-                $text       .= "\n".$now."|".substr($i->fulfillment_center_id,0,10)."|StorageLocation|".$i->sku_code."||||".$i->stock_available."|||";
+                $text       .= "\n".$now."|0056|0001|".$i->sku_code."||||".$i->stock_available."|||";
                 $VBN++;
             }
-
-            // echo $text;
              fwrite($fp, $text);
              fclose($fp);
-
         }else{
-            return IndexRes::resultData(200,['message' => 'no data'],[]);
+            ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaStockSync');
         }         
     }
-*/
 
     /**
      * Stock Transfer
+    */
      
-
 	public function stockTransfer(){
-        set_time_limit(0);
 
+
+        $order          = CustomeBuffer::where([['company_id', $this->company_id]])->whereRaw('DATE(create_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->whereNotNull('sku_code')->get();
+
+        echo json_encode($order);
+
+        /*
+        set_time_limit(0);
+	    $directory      = base_path('public/LuxasiaFile/stock_transfer');
+        $fileName       = 'TR_IB_'.date('dmY_Hi').'.TXT';
+        $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','transfer_outbound'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $now            = date('mdY');
+        if(count($order) > 0){    
+            $fp     	= fopen($directory.'/'.$fileName,'w');
+            $text       = "Transaction_Date|Store_id|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|From_StorageLocation|To_StorageLocation|Remarks|Remarks1|Remarks2|Remarks3";
+            // $text       = "Transaction_Date|Store_id|ItemCode|VBN|MANU_DATE|EXPR_DATE|Qty|WH01|WH02|Remarks|Remarks1|Remarks2|Remarks3<br>";
+            
+            foreach($order as $o){
+                $Transaction_Date   = date_format(date_create($o->create_time),"Ymd");
+                foreach($o->details as $det){
+                    $text        .= "\n".$Transaction_Date."|0056|".$det->sku_code."||||".$det->qty_ship."|WH01|WH02|".substr($o->order_no,0,40)."|||";
+                }
+                usleep(25000);
+            }
+            echo $text;
+            //  fwrite($fp, $text);
+            //  fclose($fp);
+        }else{
+            ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaStockTransferSync');
+        }
+        
+        */
+        /*
+        set_time_limit(0);
 	    $directory      = public_path('LuxasiaFile/stock_transfer');
         $fileName       = 'TR_IB_'.date('dmY_Hi').'.TXT';
         $buffer         = OrderBuffer::select('order_no')->where([['company_id',$this->company_id],['seq', 10],['type','row']])->get()->toArray();
         $arrNo          = $this->getValueFromBuffer($buffer);
+        $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','transfer_outbound'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
         $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','transfer_outbound'],['status','shipped']])->whereNotIn('order_no', $arrNo)->with('details')->get();
         $now            = date('mdY');
   
@@ -666,19 +696,17 @@ class IndexController extends Controller
                     $text        .= $Transaction_Date."|".substr($o->fulfillment_center_id,0,10)."|".$det->sku_code."|".$VBN."|".date("Ymd")."|".date("Ymd")."|".$det->qty_ship."|".substr($o->fulfillment_center_id,0,4)."|".substr($o->fulfillment_center_id,0,4)."|".substr($o->dest_remarks,0,40)."|||\n";
                     $VBN++;
                 }
-
                 OrderBuffer::create(['order_no' => $o->order_no , 'company_id' => $this->company_id , 'seq' => 10, 'type' => 'row' , 'channel' => 'API' , 'create_time' => date('Y-m-d H:i:s')]);
             }
-
             // echo $text;
              fwrite($fp, $text);
              fclose($fp);
-
         }else{
             return IndexRes::resultData(200,['message' => 'no data'],[]);
         }
-    }
 
+        */
+    }
     private function getValueFromBuffer($datas){
         $res = [];
         if(count($datas) > 0){
@@ -686,16 +714,71 @@ class IndexController extends Controller
                 array_push($res,$data['order_no']);
             }
         }
-
         return $res;
     }
-*/
     
+    
+    /**
+     * Sales Transaction Return
+     */
+	public function soReturn(){
+        set_time_limit(0);
+	    $directory      = base_path('public/LuxasiaFile/so');
+        $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
+        $orders         = PoHeader::where([['company_id', 'ECBRIGHT'], ['po_type','so_return'],['status','received']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $now            = date('mdY');
+        if(count($orders) > 0){    
+            $fp     	= fopen($directory.'/'.$fileName,'w');
+            $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
+            foreach($orders as $order){
+                $Sequence = 0;
+                foreach($order->details as $det){
+                    $Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
+                    $text        .= "\nR|".$order->po_no."|".$Sequence."|".$order->ori_name."|0056|".date_format(date_create($order->update_time),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_received."|".$Retailprice."|0|".$Retailprice."|0|||".date_format(date_create($order->create_time),"Ymd")."|".date_format(date_create($order->create_time),"His")."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."||".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|||";
+                    $Sequence++;
+                }
+            }
+            echo $text;
+            //  fwrite($fp, $text);
+            //  fclose($fp);
+        }else{
+            ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSalesTransactionSync');
+        }
+
+    }
+
+
     /**
      * Sales Transaction
      */
 
 	public function so(){
+
+        set_time_limit(0);
+	    $directory      = base_path('public/LuxasiaFile/so');
+        $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
+        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $now            = date('mdY');
+        if(count($orders) > 0){    
+            $fp     	= fopen($directory.'/'.$fileName,'w');
+            $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
+            foreach($orders as $order){
+                $Sequence = 0;
+                foreach($order->details as $det){
+                    $Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
+                    $text        .= "\nS|".$order->order_no."|".$Sequence."|".$order->order_source."|0056|".date_format(date_create($order->update_time),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($order->promo_code),0,20)."||".date_format(date_create($order->create_time),"Ymd")."|".date_format(date_create($order->create_time),"His")."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|||";
+                    $Sequence++;
+                }
+            }
+            echo $text;
+            //  fwrite($fp, $text);
+            //  fclose($fp);
+        }else{
+            ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSalesTransactionSync');
+        }
+    
+        
+        /*
         set_time_limit(0);
 		
 		$yesterday		= date('Y-m-d',strtotime("-1 days"));
@@ -734,6 +817,8 @@ class IndexController extends Controller
         }else{
             return IndexRes::resultData(200,['message' => 'no data'],[]);
         }
+
+        */
     }
 
     private function checkPrice($price){

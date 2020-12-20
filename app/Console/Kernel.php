@@ -15,8 +15,14 @@ class Kernel extends ConsoleKernel
     protected $commands = [
       \Laravelista\LumenVendorPublish\VendorPublishCommand::class,
       Commands\Luxasia\LuxasiaSkuSync::class, // luxasia
+      Commands\Luxasia\LuxasiaPoSync::class, // luxasia
+      Commands\Luxasia\LuxasiaReceiptsPoSync::class, // luxasia
+      Commands\Luxasia\LuxasiaStockSync::class, // luxasia
+      Commands\Luxasia\LuxasiaStockTransferSync::class, // luxasia
+      Commands\Luxasia\LuxasiaSalesTransactionSync::class, // luxasia
+      Commands\Luxasia\LuxasiaSalesTransactionReturnSync::class, // luxasia
     ];
-	
+    
 
     /**
      * Define the application's command schedule.
@@ -26,8 +32,25 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-      $schedule->command('LuxasiaSkuSync:sender')->hourly();  // luxasia
+      // luxasia
+      $schedule->command('LuxasiaSkuSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
+      $schedule->command('LuxasiaStockTransferSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
+      $schedule->command('LuxasiaSalesTransactionSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
+      $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
+      $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('05:41');
+      $schedule->command('LuxasiaPoSync:sender')->hourlyAt(33);
+      $schedule->command('LuxasiaReceiptsPoSync:sender')->hourlyAt(10);
 
     }
+
+    /**
+   * Get the timezone that should be used by default for scheduled events.
+   *
+   * @return \DateTimeZone|string|null
+   */
+  protected function scheduleTimezone()
+  {
+      return 'Asia/Jakarta';
+  }
  
 }

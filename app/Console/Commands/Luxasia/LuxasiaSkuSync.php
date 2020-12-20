@@ -3,12 +3,17 @@
 namespace App\Console\Commands\Luxasia;
  
 use Illuminate\Console\Command;
-
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Response,Auth,Session;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OmsEmailNotification;
+use Illuminate\Support\Facades\File;
+use PDF;
+use PHPExcel; 
+use PHPExcel_IOFactory;
+use Ramsey\Uuid\Uuid;
 
 
 use App\Http\Controllers\ApiLogController as ApiLog;
@@ -47,7 +52,7 @@ class LuxasiaSkuSync extends Command
      *
      * @var string
      */
-    protected $description = 'Luxasia Sync SKU to SCI';
+    protected $description = 'SKU from Luxasia to SCI';
  
     /**
      * Create a new command instance.
@@ -66,20 +71,19 @@ class LuxasiaSkuSync extends Command
      */
     public function handle()
     {
-
-        $directory = public_path('LuxasiaFile/sku');
-		$files = File::allFiles($directory); 
+        set_time_limit(0);
+        $directory = base_path('public/LuxasiaFile/sku');
+        $files = File::allFiles($directory); 
 		if(count($files) > 0){
 			foreach($files as $path){
 				$file 		= pathinfo($path);
                 $fileName	= $file['basename'];
                 
-				return $this->checkSKUFile($file,$fileName);
+                return $this->checkSKUFile($file,$fileName);
+                sleep(1);
 			}
 		}else{
-            $subject    = 'Luxasia SKU Integration';
-            $content    = 'No File';
-            ApiLog::sendEmail($subject,$content);
+            ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSkuSync');
         }
         
     }
@@ -116,10 +120,14 @@ class LuxasiaSkuSync extends Command
                      $all_rows[] = $dd;
                      $res = $this->insertSKU($dd);
                      if($res["status"] != "200"){
-                        ApiLog::insertLog('App\Console\Commands\Luxasia\LuxasiaSkuSync','production',json_encode($res), 'ERROR' , $current_line,'/',$this->company_id);
+                        $subject    = 'Luxasia SKU Integration';
+                        $content    = $current_line;
+                        ApiLog::sendEmail($subject,$content);
                      }
                  }
                  $x++;
+
+                 usleep(25000);
              }
 
             fclose($fp);

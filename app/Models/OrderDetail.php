@@ -26,7 +26,7 @@ class OrderDetail extends Model
     protected $fillable     = array('order_header_id','sku_code','sku_description','qty_order',
             'price','amount_order','qty_ship','amount_ship','remarks','status','promo_code',
             'origin_address_id','dest_address_id','insured','special_packaging','sku_parent',
-            'order_price','crossdock_no');
+            'order_price','crossdock_no','qty_available');
     public $timestamps      = true;
    
     public function header()

@@ -59,8 +59,8 @@ class ApiLogController extends Controller
 	}
 	
     public static function sendEmail($subject,$content,$attachment=array()){
-        $to = array('nugroho.aditya@8commerce.com','operation@8commerce.com','it@8commerce.com');
-        // $to = array('nugroho.aditya@8commerce.com');
+        // $to = array('nugroho.aditya@8commerce.com','operation@8commerce.com');
+        $to = array('nugroho.aditya@8commerce.com');
             Mail::to($to)->send(new OmsEmailNotification($subject,$content ,$attachment));
             try {
                 return response()->json("Email Sent!");
