@@ -131,7 +131,8 @@ class IndexController extends Controller
                         $check->save();
 
                         OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'status'    => 'delivered'
+                            'status'        => 'delivered',
+                            'update_time'   => Carbon::now()
                         ]);
 
                         OrderStatusTracking::insert([
@@ -144,7 +145,8 @@ class IndexController extends Controller
                         ]);
                         
                         OrderDetail::where('order_header_id',$check->order_header_id)->update([
-                            'status'    => 'delivered'
+                            'status'        => 'delivered',
+                            'update_time'   => Carbon::now()
                         ]);
                         
                         return IndexRes::resultData(200,['message' => 'update successfully'],[]);
@@ -158,7 +160,8 @@ class IndexController extends Controller
                         $check->save();
 
                         OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'trip_id'    => 0
+                            'trip_id'       => 0,
+                            'update_time'   => Carbon::now()
                         ]);
                        
                         
@@ -184,7 +187,8 @@ class IndexController extends Controller
                         $check->save();
                         
                         OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'status'    => 'return-reject'
+                            'status'        => 'return-reject',
+                            'update_time'   => Carbon::now()
                         ]);
                        
                         
@@ -198,7 +202,8 @@ class IndexController extends Controller
                         ]);
 
                         OrderDetail::where('order_header_id',$check->order_header_id)->update([
-                            'status'    => 'return-reject'
+                            'status'        => 'return-reject',
+                            'update_time'   => Carbon::now()
                         ]);
                         return IndexRes::resultData(200,['message' => 'update successfully'],[]);
                     }else{
