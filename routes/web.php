@@ -22,7 +22,6 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('stock-transfer',['as' => 'luxasiaStockTransfer','uses' => 'IndexController@stockTransfer']);
 		$router->get('so',['as' => 'luxasiaSo','uses' => 'IndexController@so']);
 		$router->get('so-return',['as' => 'luxasiaSo','uses' => 'IndexController@soReturn']);
-
 	});
 	
 
@@ -33,9 +32,16 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('/search-order/{tripId}',['as' => 'xpressSearchOrder','uses' => 'IndexController@SearchOrder']);
 		$router->get('/trip-detail/{tripDetailId}',['as' => 'xpressDetailTripOrder','uses' => 'IndexController@detailTripOrder']);
 		$router->post('/update-status/{tripDetailId}',['as' => 'xpressUpdateStatus','uses' => 'IndexController@updateStatus']);
-
 	});
 
+	$router->group(['prefix' => 'xstore', 'namespace' => 'Xstore'], function () use ($router) {
+		$router->get('/',['as' => 'xstoreIndex','uses' => 'IndexController@index']);
+		$router->post('/login',['as' => 'xstoreLogin','uses' => 'IndexController@login']);
+		$router->get('/search-order/{storeId}',['as' => 'xstoreSearchOrder','uses' => 'IndexController@SearchOrder']);
+		$router->get('/order-detail/{storeId}/{orderId}',['as' => 'xstoreDetailOrder','uses' => 'IndexController@DetailOrder']);
+		$router->get('/search-detail-order/{storeId}/{orderId}',['as' => 'xstoreSearchDetailOrder','uses' => 'IndexController@SearchDetailOrder']);
+		$router->post('/update-qty-delivered/{storeId}/{idOrderDetail}',['as' => 'xstoreUpdateQtyDelivered','uses' => 'IndexController@updateQtyDelivered']);
+	});
 
 });
  

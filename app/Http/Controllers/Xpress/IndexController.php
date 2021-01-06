@@ -121,94 +121,101 @@ class IndexController extends Controller
             }else{
                 $check  = TripDetails::with(['tripHeader','order.details'])->where('trip_detail_id' , $tripDetailId)->first();
                 if($check){
-                    if($request->status == 'finished'){
-                        $check->status          = $request->status;
-                        $check->remarks         = $request->remarks;
-                        $check->pod             = $request->pod;
-                        $check->longitude       = $request->longitude;
-                        $check->latitude        = $request->latitude;
-                        $check->finish_time     = Carbon::now();
-                        $check->save();
+                    $orderStatus    = OrderHeader::where('order_header_id',$check->order_header_id)->first();
+                    if(@$orderStatus->status == 'shipped'){
 
-                        OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'status'        => 'delivered',
-                            'update_time'   => Carbon::now()
-                        ]);
-
-                        OrderStatusTracking::insert([
-                            "order_no"      => $check->order->order_no,
-                            "status"        => 'delivered',
-                            "system"        => 'oms',
-                            "remarks"       => $request->remarks.' delivered by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
-                            "create_by"     => $check->tripHeader->driver_name,
-                            "order_header_id"   => $check->order_header_id
-                        ]);
-                        
-                        OrderDetail::where('order_header_id',$check->order_header_id)->update([
-                            'status'        => 'delivered',
-                            'update_time'   => Carbon::now()
-                        ]);
-                        
-                        return IndexRes::resultData(200,['message' => 'update successfully'],[]);
-                    }elseif($request->status == 'failed'){
-                        $check->status          = $request->status;
-                        $check->remarks         = $request->remarks;
-                        $check->pod             = $request->pod;
-                        $check->longitude       = $request->longitude;
-                        $check->latitude        = $request->latitude;
-                        $check->finish_time     = Carbon::now();
-                        $check->save();
-
-                        OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'trip_id'       => 0,
-                            'update_time'   => Carbon::now()
-                        ]);
-                       
-                        
-                        OrderStatusTracking::insert([
-                            "order_no"      => $check->order->order_no,
-                            "status"        => 'shipped',
-                            "system"        => 'oms',
-                            "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
-                            "create_by"     => $check->tripHeader->driver_name,
-                            "order_header_id"   => $check->order_header_id
-                        ]);
-
-                        return IndexRes::resultData(200,['message' => 'update successfully'],[]);
-
-                    }elseif($request->status == 'rejected'){
-
-                        $check->status          = $request->status;
-                        $check->remarks         = $request->remarks;
-                        $check->pod             = $request->pod;
-                        $check->longitude       = $request->longitude;
-                        $check->latitude        = $request->latitude;
-                        $check->finish_time     = Carbon::now();
-                        $check->save();
-                        
-                        OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                            'status'        => 'return-reject',
-                            'update_time'   => Carbon::now()
-                        ]);
-                       
-                        
-                        OrderStatusTracking::insert([
-                            "order_no"      => $check->order->order_no,
-                            "status"        => 'return-reject',
-                            "system"        => 'oms',
-                            "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
-                            "create_by"     => $check->tripHeader->driver_name,
-                            "order_header_id"   => $check->order_header_id
-                        ]);
-
-                        OrderDetail::where('order_header_id',$check->order_header_id)->update([
-                            'status'        => 'return-reject',
-                            'update_time'   => Carbon::now()
-                        ]);
-                        return IndexRes::resultData(200,['message' => 'update successfully'],[]);
+                        if($request->status == 'finished'){
+                            $check->status          = $request->status;
+                            $check->remarks         = $request->remarks;
+                            $check->pod             = $request->pod;
+                            $check->longitude       = $request->longitude;
+                            $check->latitude        = $request->latitude;
+                            $check->finish_time     = Carbon::now();
+                            $check->save();
+    
+                            OrderHeader::where('order_header_id',$check->order_header_id)->update([
+                                'status'        => 'delivered',
+                                'update_time'   => Carbon::now()
+                            ]);
+    
+                            OrderStatusTracking::insert([
+                                "order_no"      => $check->order->order_no,
+                                "status"        => 'delivered',
+                                "system"        => 'oms',
+                                "remarks"       => $request->remarks.' delivered by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
+                                "create_by"     => $check->tripHeader->driver_name,
+                                "order_header_id"   => $check->order_header_id
+                            ]);
+                            
+                            OrderDetail::where('order_header_id',$check->order_header_id)->update([
+                                'status'        => 'delivered',
+                                'update_time'   => Carbon::now()
+                            ]);
+                            
+                            return IndexRes::resultData(200,['message' => 'update successfully'],[]);
+                        }elseif($request->status == 'failed'){
+                            $check->status          = $request->status;
+                            $check->remarks         = $request->remarks;
+                            $check->pod             = $request->pod;
+                            $check->longitude       = $request->longitude;
+                            $check->latitude        = $request->latitude;
+                            $check->finish_time     = Carbon::now();
+                            $check->save();
+    
+                            OrderHeader::where('order_header_id',$check->order_header_id)->update([
+                                'trip_id'       => 0,
+                                'update_time'   => Carbon::now()
+                            ]);
+                           
+                            
+                            OrderStatusTracking::insert([
+                                "order_no"      => $check->order->order_no,
+                                "status"        => 'shipped',
+                                "system"        => 'oms',
+                                "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
+                                "create_by"     => $check->tripHeader->driver_name,
+                                "order_header_id"   => $check->order_header_id
+                            ]);
+    
+                            return IndexRes::resultData(200,['message' => 'update successfully'],[]);
+    
+                        }elseif($request->status == 'rejected'){
+    
+                            $check->status          = $request->status;
+                            $check->remarks         = $request->remarks;
+                            $check->pod             = $request->pod;
+                            $check->longitude       = $request->longitude;
+                            $check->latitude        = $request->latitude;
+                            $check->finish_time     = Carbon::now();
+                            $check->save();
+                            
+                            OrderHeader::where('order_header_id',$check->order_header_id)->update([
+                                'status'        => 'return-reject',
+                                'update_time'   => Carbon::now()
+                            ]);
+                           
+                            
+                            OrderStatusTracking::insert([
+                                "order_no"      => $check->order->order_no,
+                                "status"        => 'return-reject',
+                                "system"        => 'oms',
+                                "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
+                                "create_by"     => $check->tripHeader->driver_name,
+                                "order_header_id"   => $check->order_header_id
+                            ]);
+    
+                            OrderDetail::where('order_header_id',$check->order_header_id)->update([
+                                'status'        => 'return-reject',
+                                'update_time'   => Carbon::now()
+                            ]);
+                            return IndexRes::resultData(200,['message' => 'update successfully'],[]);
+                        }else{
+                            return IndexRes::resultData(422,[],["message" =>'status not found']);
+                        }
                     }else{
-                        return IndexRes::resultData(422,[],["message" =>'status not found']);
+                        return IndexRes::resultData(422,[],["message" =>'Order must be shipped status']);
                     }
+
                 }else{
                     return IndexRes::resultData(422,[],["message" =>'data not found']);
                 }

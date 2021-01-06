@@ -44,6 +44,10 @@ class OrderHeader extends Model
         return $this->belongsTo('App\Models\Courier','courier_id','courier_id');
     }
 
+    public function company(){
+        return $this->belongsTo('App\Models\Company','company_id','company_id');
+    }
+
     public function fulfillmentCenter(){
         return $this->belongsTo('App\Models\FulfillmentCenter','fulfillment_center_id','fulfillment_center_id');
     }
