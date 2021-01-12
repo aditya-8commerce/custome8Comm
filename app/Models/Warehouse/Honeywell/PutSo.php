@@ -7,6 +7,7 @@ use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\Client as Client;
 use Psr\Http\Message\RequestInterface;
 use App\Http\Controllers\ApiLogController as ApiLog;
+use App\Models\OrderTypeMaster;
 
 
 class PutSo
@@ -44,52 +45,60 @@ class PutSo
         $detailsItem        = []; 
 		$no = 1;
 
-  
-		if(strtolower($datas->order_source)=='b2b'){
-			$order_type='B2BO'; 
-			$consigneeId = 'B2B';
-		}elseif (strtolower($datas->company_id)=='ecing' || strtolower($datas->company_id)=='ecingsal' || strtolower($datas->company_id)=='rbizb2b')
+        if(empty($order_type)){
+            $order_type     = 'NOM';
+            $consigneeId    = 'NOM';	
+
+            if(strtolower($datas->order_source)=='b2b'){
+                $order_type     = 'B2BO'; 
+                $consigneeId    = 'B2B';
+            }else{
+                $orderType  = OrderTypeMaster::where('order_type_name','=',$datas->order_type)->first();
+                if($orderType){
+                    $order_type     = $orderType->order_type_code; 
+                    $consigneeId    = $orderType->order_type_code; 
+                }
+                
+            }
+
+        }
+
+        if (strtolower($datas->company_id)=='ecing' || strtolower($datas->company_id)=='ecingsal' || strtolower($datas->company_id)=='rbizb2b')
 		{
 			if(strtolower($datas->order_type)=='transfer_outbound'){
-				$order_type='TROF';
-				$consigneeId = 'TROF';				
+				$order_type     = 'TROF';
+				$consigneeId    = 'TROF';				
 			}else{
-				$order_type='B2BO';
-				$consigneeId = 'B2B';
-				
+				$order_type     = 'B2BO';
+				$consigneeId    = 'B2B';
 			}
-		}elseif (strtolower($datas->order_type)=='crossdock')
-		{
-			$order_type='PTS';
-			$consigneeId = 'PTS';
-		}else if (strtolower($datas->order_type)=='put_to_store')
-		{
-			$order_type='PTS';
-			$consigneeId = 'PTS';
-		}else if (strtolower($datas->order_type)=='transfer_outbound')
-		{
-			$order_type='TROF';
-			$consigneeId = 'TROF';
         }
         
-		
-		if(strtolower($datas->courier_id) == 'gosend-sameday' || strtolower($datas->courier_id) == 'gosend-samedaycl' || strtolower($datas->courier_id) == 'gosend-instant' || strtolower($datas->courier_id) == 'gosend-instantcl' || strtolower($datas->courier_id) == 'grab-instant'  || strtolower($datas->courier_id) == 'grab-instantcl' || strtolower($datas->courier_id) == 'grab-sameday'  || strtolower($datas->courier_id) == 'grab-samedaycl'  || strtolower($datas->courier_id) == 'anteraja'  || strtolower($datas->courier_id) == 'sicepat'  || strtolower($datas->courier_id) == 'sicepat_best' || strtolower($datas->courier_id) == 'sicepat_cashless'  || strtolower($datas->courier_id) == 'sicepat_best_cashless' || strtolower($datas->courier_id) == 'sicepat_bestcl' || strtolower($datas->courier_id) == 'sicepatcl'){
-			$userDefine2='SAME';
-		}else{
-			$userDefine2='REGULAR';
+        if(strtolower($order_type) == 'b2bo'){
+            $consigneeId    = 'B2B';
+        }
+
+        
+        $$userDefine2   = $this->checkUserDefine2(strtolower($datas->courier_id));
+        
+
+		$dest_name	= strtoupper($data->dest_name);
+
+		if(strtolower($data->company_id) == 'ecbright'){
+			$consigneeId 	= strtoupper($data->dest_name);
+			$dest_name		= strtoupper($data->dest_remarks);
 		}
 		
 
         foreach($datas->orderDetails as $k=>$row) {
-			if(empty($row->price) || $row->price === NULL)
-				{ 
+			if(empty($row->price) || $row->price === NULL){ 
 				$p = 0;
-				}
-				else{ 
+			}else{ 
 				$p = $row->price;
-				}
-				if(strtolower($datas->order_type)=='put_to_store' || strtolower($datas->order_type)=='crossdock'){
-					$detailsItem[] = array(
+			}
+            
+            if(strtolower($datas->order_type)=='put_to_store' || strtolower($datas->order_type)=='crossdock'){
+				$detailsItem[] = array(
 						"lineNo"	   => $k+1, 
 						"customerId"   => $datas->company_id, 
 						"sku"          => $row->sku_code,
@@ -98,9 +107,9 @@ class PutSo
 						"lotAtt07"	   => $row->crossdock_no,
 						// "lotAtt10"	   => strtoupper($datas->order_no),
 						"price"		   => $p
-					);
-				}else{
-					$detailsItem[] = array(
+				);
+			}else{
+				$detailsItem[] = array(
 						"lineNo"	   => $k+1, 
 						"customerId"   => $datas->company_id, 
 						"sku"          => $row->sku_code,
@@ -109,7 +118,7 @@ class PutSo
 						"lotAtt07"	   => $row->crossdock_no,
 						"price"		   => $p
 					);					
-				}
+			}
         }
         $datasRecord = array(
             "xmldata" =>  array(
@@ -124,7 +133,7 @@ class PutSo
                         "soReference5"         => strtoupper($datas->awb_no),
                         "deliveryNo"           => strtoupper($datas->awb_no),
                         "consigneeId"          => strtoupper($consigneeId),
-                        "consigneeName"        => strtoupper($datas->dest_name),
+                        "consigneeName"        => $dest_name,
                         "consigneeCountry"     => strtoupper($datas->dest_country),
                         "consigneeProvince"    => strtoupper($datas->dest_province),
                         "consigneeCity"        => strtoupper($datas->dest_city),
@@ -176,5 +185,43 @@ class PutSo
         }
     }
 
- 
+    private function checkUserDefine2($courierId){
+        $array  = ['gosend-sameday','gosend-samedaycl','gosend-instant','gosend-instantcl','grab-instant','grab-instantcl',
+        'grab-sameday','grab-samedaycl','anteraja','sicepat','sicepat_best','sicepat_cashless','sicepat_best_cashless',
+        'sicepat_bestcl','sicepatcl'];
+
+        if(in_array($courierId, $array)){
+            return 'SAME';
+        }else{
+            return 'REGULAR';
+        }
+    }
+
+
+	private function cartonGroup($company_id){
+		
+		$cartonGroup	= $company_id;
+		
+		if(strtoupper($company_id)=='ECCOCO' || strtoupper($company_id)=='ECCOCO_2' || strtoupper($company_id)=='ECGANEN' || strtoupper($company_id)=='ECTUP'){
+			$cartonGroup		= 'STANDARD';
+		}
+		
+		if(strtoupper($company_id)=='ECINGCOM' || strtoupper($company_id)=='ECINGSAL' || strtoupper($company_id)=='ECING_TSTER'){
+			$cartonGroup		= 'ECING';
+		}
+		
+		if(strtoupper($company_id)=='ECZAP_2'){
+			$cartonGroup		= 'ECZAP';
+		}
+		
+		if(strtoupper($company_id)=='RBIZB2B' || strtoupper($company_id)=='RBIZBUSTAR' || strtoupper($company_id)=='RBIZNAMEERA'){
+			$cartonGroup		= 'RBIZ';
+		}
+		
+		if(strtoupper($company_id)=='LOGISTIC_99'){
+			$cartonGroup		= 'LOG99';
+		}
+		
+		return $cartonGroup;
+	}
 }

@@ -7,6 +7,7 @@ use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\Client as Client;
 use Psr\Http\Message\RequestInterface;
 use App\Http\Controllers\ApiLogController as ApiLog;
+use App\Models\PoTypeMaster;
 
 
 class InboundAsn
@@ -58,38 +59,31 @@ class InboundAsn
                 "sku"          => strtoupper($row->sku_code),
                 "expectedQty"  => $row->qty_order,
 				"lotAtt07"	   => $asnReference2,
+                "dedi06"  	    => $row->price,
+                "totalPrice"  	=> $row->amount_order,
 				// "lotAtt09"	   => strtoupper($data->po_no)
             );
 			$no++;
         }
 
         
+		$orderType      = "NOM";
+        $userDefine4    = "";
+
+        $poType  = PoTypeMaster::where('po_type_status_code','=',$datas->po_type)->first();
+        if($poType){
+            $orderType      =  $poType->po_type_code;
+        }
+        
+        if($datas->po_type == 'po_return' || $datas->po_type == 'so_return'){
+            $userDefine4    = $datas->po_no;
+        }
 		
-			$orderType = "NOM";
-            $userDefine4="";
             
+        if($datas->po_type == 'crossdock'){
+            $userDefine4    = $datas->crossdock_no;
+        }
             
-			
-		if($datas->po_type == 'crossdock'){
-			// $orderType = "CRD";
-			$orderType = "PTS";
-			$userDefine4=$datas->crossdock_no;
-		}elseif($datas->po_type == 'put_to_store'){
-			$orderType = "PTS";
-			$userDefine4='';
-		}elseif($datas->po_type == 'po_return'){
-			$orderType = "REF";
-			$userDefine4=$data->po_no;
-		}elseif($datas->po_type == 'so_return'){
-			$orderType = "RE";
-			$userDefine4=$data->po_no;
-		}elseif($datas->po_type == 'regular_return'){
-			$orderType = "RR";
-		}elseif($datas->po_type == 'transfer_inbound'){
-			$orderType = "TRF";
-		}else{
-			$orderType = "NOM";
-		}
         $datasRecord = array(
             "xmldata" =>  array(
                 "header" => [

@@ -21,6 +21,9 @@ class Kernel extends ConsoleKernel
       Commands\Luxasia\LuxasiaStockTransferSync::class, // luxasia
       Commands\Luxasia\LuxasiaSalesTransactionSync::class, // luxasia
       Commands\Luxasia\LuxasiaSalesTransactionReturnSync::class, // luxasia
+
+
+      Commands\Bright\BrightAutoCreateTrip::class, // bright
     ];
     
 
@@ -41,6 +44,8 @@ class Kernel extends ConsoleKernel
       $schedule->command('LuxasiaPoSync:sender')->hourlyAt(33);
       $schedule->command('LuxasiaReceiptsPoSync:sender')->hourlyAt(10);
 
+      // bright
+      $schedule->command('BrightAutoCreateTrip:sender')->timezone('Asia/Jakarta')->cron('*/15 08-20 * * 1-6');
     }
 
     /**

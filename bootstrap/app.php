@@ -39,7 +39,8 @@ $app->withEloquent();
 
 $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
-    App\Exceptions\Handler::class
+    App\Exceptions\Handler::class,
+    App\Libraries\SH1HashServiceProvider::class
 );
 
 $app->singleton(

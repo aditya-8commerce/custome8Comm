@@ -30,6 +30,7 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('/',['as' => 'xpressIndex','uses' => 'IndexController@index']);
 		$router->post('/login',['as' => 'xpressLogin','uses' => 'IndexController@login']);
 		$router->get('/search-order/{tripId}',['as' => 'xpressSearchOrder','uses' => 'IndexController@SearchOrder']);
+		$router->get('/search-order-detail/{tripId}',['as' => 'xstoreSearchOrderDetail','uses' => 'IndexController@SearchOrderDetail']);
 		$router->get('/trip-detail/{tripDetailId}',['as' => 'xpressDetailTripOrder','uses' => 'IndexController@detailTripOrder']);
 		$router->post('/update-status/{tripDetailId}',['as' => 'xpressUpdateStatus','uses' => 'IndexController@updateStatus']);
 	});
@@ -42,6 +43,18 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 		$router->get('/search-detail-order/{storeId}/{orderId}',['as' => 'xstoreSearchDetailOrder','uses' => 'IndexController@SearchDetailOrder']);
 		$router->post('/update-qty-delivered/{storeId}/{idOrderDetail}',['as' => 'xstoreUpdateQtyDelivered','uses' => 'IndexController@updateQtyDelivered']);
 	});
+
+
+	$router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($router) {		
+		$router->group(['prefix' => 'demo'], function () use ($router) {
+			$router->get('/',['as' => 'apiIndexDemo','uses' => 'IndexDemoController@index']);
+			$router->get('/get-so',['as' => 'apiIndexDemo','uses' => 'IndexDemoController@getSo']);
+			
+			
+		});
+		
+	});
+
 
 });
  

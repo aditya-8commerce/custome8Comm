@@ -79,12 +79,28 @@ class IndexController extends Controller
 		}
 	}
 	
+	public function SearchOrderDetail(Request $request , $tripId){
+        $order_no   = $request->order_no;
+        $awb_no     = $request->awb_no;
+        // $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_detail_id' , $tripDetailId)->whereIn('status',['new','started'])->first();
+        $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_id' , $tripId)->whereIn('status',['new','started']);
+
+        $query = $query->whereHas('order', function($query) use ($order_no,$awb_no ){
+                $query->where('order_no', $order_no)->orWhere('awb_no', $awb_no);
+            });
+        
+        $res = $query->first();
+    
+        return IndexRes::resultData(200,$res,[]);
+    }
+
+
 	public function SearchOrder(Request $request , $tripId){
         $sort_field         = "trip_detail_id";
         $sort_type          = "DESC";
         $perPage        	= $request->per_page;
         $order_no     		= $request->order_no;
-        $dest_name     		= $request->dest_name;
+        // $dest_name     		= $request->dest_name;
 
         $query  = TripDetails::with(['tripHeader','order.details'])->where('trip_id' , $tripId)->whereIn('status',['new','started'])->orderBy($sort_field,$sort_type);
 
@@ -95,12 +111,12 @@ class IndexController extends Controller
             });
         }
 		
-        if ($dest_name) {
-            $like = "%{$dest_name}%";
-            $query = $query->whereHas('order', function($query) use ($like){
-                $query->where('dest_name', 'LIKE', $like);
-            });
-        }
+        // if ($dest_name) {
+        //     $like = "%{$dest_name}%";
+        //     $query = $query->whereHas('order', function($query) use ($like){
+        //         $query->where('dest_name', 'LIKE', $like);
+        //     });
+        // }
 
         $res = $query->paginate($perPage);
 
@@ -122,6 +138,7 @@ class IndexController extends Controller
                 $check  = TripDetails::with(['tripHeader','order.details'])->where('trip_detail_id' , $tripDetailId)->first();
                 if($check){
                     $orderStatus    = OrderHeader::where('order_header_id',$check->order_header_id)->first();
+                    $this->updateFinishedTripHeader($check);
                     if(@$orderStatus->status == 'shipped'){
 
                         if($request->status == 'finished'){
@@ -220,6 +237,15 @@ class IndexController extends Controller
                     return IndexRes::resultData(422,[],["message" =>'data not found']);
                 }
             }
+    }
+
+
+    private function updateFinishedTripHeader($tripDetail){
+        $check  = TripDetails::where([['trip_id' , $tripDetail->trip_id],['status','!=','finished']])->whereNotIn('trip_detail_id', [$tripDetail->trip_detail_id])->get();
+        if(count($check) <= 0){
+            TripHeader::where('trip_id' , $tripDetail->trip_id)
+                ->update(['finish_time' => Carbon::now()]);
+        }
     }
 
 }

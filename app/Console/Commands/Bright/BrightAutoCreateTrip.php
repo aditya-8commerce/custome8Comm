@@ -1,63 +1,67 @@
 <?php
-namespace App\Http\Controllers;  
-
-
+ 
+namespace App\Console\Commands\Bright;
+ 
+use Illuminate\Console\Command;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Response,Auth,Session;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OmsEmailNotification;
+use Illuminate\Support\Facades\File;
+use PDF;
+use PHPExcel; 
+use PHPExcel_IOFactory;
 use Ramsey\Uuid\Uuid;
 
-use App\Models\Warehouse\Honeywell\PutSku;
-use App\Models\Sku;
-use App\Models\OrderHeader;
-use App\Models\PoHeader;
+
 use App\Http\Controllers\ApiLogController as ApiLog;
-
-use App\Models\TripDetails;
+use App\Res\IndexRes;
+use App\Models\FulfillmentCenter;
+use App\Models\OrderHeader;
 use App\Models\TripHeader;
+use App\Models\TripDetails;
 use App\Models\TripStatusTracking;
-use Carbon\Carbon;
 
 
-class IndexController extends Controller
+class BrightAutoCreateTrip extends Command
 {
-	
-/* 
-error status code
-	200	success
-	404	Not Found (page or other resource doesn’t exist)
-	401	Not authorized (not logged in)
-	403	Logged in but access to requested area is forbidden
-	400	Bad request (something wrong with URL or parameters)
-	422	Unprocessable Entity (validation failed)
-	500	General server error
-*/
 
-    public function __construct(){
-         
+    public $company_id              = 'ECBRIGHT';
+/**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'BrightAutoCreateTrip:sender';
+ 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'ECBRIGHT Create Auto Trip';
+ 
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
     }
-
-	public function index(){
-		return response()
-		->json(['status'=>200 ,'datas' => ['message' => 'API Custom 8commerce'], 'errors' => []])
-		->setStatusCode(200)
-		->withHeaders(['Content-Type' => 'application/json',]);
-	}
-	
-	public function pagenotfound(){
-		return response()
-		->json(['status'=>404 ,'datas' => [], 'errors' => ['message' => 'Not Found!']])
-		->setStatusCode(404)
-		->withHeaders(['Content-Type' => 'application/json',]);
-	 
-	}
-	
-	public function servererror(){
-		return response()
-		->json(['status'=>500 ,'datas' => [], 'errors' => ['message' => 'General server error!']])
-		->setStatusCode(500)
-		->withHeaders(['Content-Type' => 'application/json',]);
-	} 
-	
-	public function coba(){
-		$today 			= new Carbon();
+ 
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+        set_time_limit(0);
+        $today 			= new Carbon();
 		if($today->dayOfWeek == Carbon::SUNDAY){
 			ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '', '\App\Console\Commands\Bright\BrightAutoCreateTrip');
 		}else{
@@ -93,9 +97,10 @@ error status code
 				ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '', '\App\Console\Commands\Bright\BrightAutoCreateTrip');
 			}
 		}
-	} 
+        
+    }
 
-	private function addTripDetail($trip,$order){
+    private function addTripDetail($trip,$order){
 		
 		$courier_id				= $order->courier_id;
 		$company_id				= $order->company_id;
@@ -162,5 +167,4 @@ error status code
 			ApiLog::sendEmail('ECBRIGHT createTrip Fail', json_encode($e),array());
 		}
 	}
-	
 }
