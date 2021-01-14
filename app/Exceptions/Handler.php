@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Http\Response;
-use App\Models\Log;
+use App\Models\ApiLog;
 
 class Handler extends ExceptionHandler
 {
@@ -58,28 +58,16 @@ class Handler extends ExceptionHandler
 		}else{
 			$message    = $exception->getMessage();
         }
-            // Log::create([
-        //     'instance'      => $hostname,
-        //     'channel'       => $channel,
-        //     'message'       => $message,
-        //     'level'         => $level,
-        //     'ip'            => $ip,
-        //     'user_agent'    => $user_agent,
-        //     'url'           => $url,
-        //     'context'       => $exception,
-        //     'extra'         => $request
-
-        // ]);
         $level      = $rendered->getStatusCode();
         $channel    = $config['name'] ?? env('APP_ENV');
         $ip         = $request->server('REMOTE_ADDR');
         $user_agent = $request->server('HTTP_USER_AGENT');
 
-        Log::create([
+        ApiLog::create([
             'instance'      => $hostname,
             'channel'       => $channel,
-            'message'       => $message,
-            'level'         => $level,
+            'message'       => $level.' / '.$message,
+            'level'         => 'ERROR',
             'ip'            => $ip,
             'user_agent'    => $user_agent,
             'url'           => $url,
