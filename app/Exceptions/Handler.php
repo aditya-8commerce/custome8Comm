@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Http\Response;
+use App\Models\Log;
 
 class Handler extends ExceptionHandler
 {
@@ -45,27 +47,66 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+
+
+        $rendered   = parent::render($request, $exception);
+        $url        = $request->path();
+        $hostname   = gethostname();
+
+        if ($exception instanceof ValidationException) {
+			$message = json_decode($exception->getResponse()->content());
+		}else{
+			$message    = $exception->getMessage();
+        }
+            // Log::create([
+        //     'instance'      => $hostname,
+        //     'channel'       => $channel,
+        //     'message'       => $message,
+        //     'level'         => $level,
+        //     'ip'            => $ip,
+        //     'user_agent'    => $user_agent,
+        //     'url'           => $url,
+        //     'context'       => $exception,
+        //     'extra'         => $request
+
+        // ]);
+        $level      = $rendered->getStatusCode();
+        $channel    = $config['name'] ?? env('APP_ENV');
+        $ip         = $request->server('REMOTE_ADDR');
+        $user_agent = $request->server('HTTP_USER_AGENT');
+
+        Log::create([
+            'instance'      => $hostname,
+            'channel'       => $channel,
+            'message'       => $message,
+            'level'         => $level,
+            'ip'            => $ip,
+            'user_agent'    => $user_agent,
+            'url'           => $url,
+            'context'       => $exception,
+            'extra'         => $request
+
+        ]);
+
+        
+
+        return response()
+        ->json([
+            'status'=>$level ,
+            'datas' => [], 
+            'errors' => [
+                'ip' => $ip, 
+                'user_agent' => $user_agent, 
+                'message' => $message, 
+            ]
+            ])
+        ->withHeaders([
+            'Content-Type'          => 'application/json',
+            ])
+        ->setStatusCode($level);
+
         // return parent::render($request, $exception);
 		
-		if($this->isHttpException($exception))
-        {
-            switch ($exception->getStatusCode()) {
-                case 404:
-                return redirect()->route('pagenotfound');
-                    break;
-                case 500:
-                return redirect()->route('servererror');
-                    break;
-                
-                default:
-                    return redirect()->route('pagenotfound');
-                    break;
-            }
-        }
-        else
-        {
-            return parent::render($request, $exception);
-        }
     }
  
 }
