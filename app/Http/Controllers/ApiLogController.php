@@ -165,4 +165,36 @@ class ApiLogController extends Controller
 		}
     }
 
+
+    public static function isBase64Encoded($str){
+        try
+        {
+            $decoded = base64_decode($str, true);
+    
+            if ( base64_encode($decoded) === $str ) {
+                return $decoded;
+            }else{
+                return false;
+            }
+        }catch(Exception $e){
+            // If exception is caught, then it is not a base64 encoded string
+            return false;
+        }
+    
+    }
+
+    public static function isExplode($str){
+        try
+        {
+            if(strpos($str, ':') !== false) {
+                return explode(':', $str);
+            } else {
+                return false;
+            }
+        }catch(Exception $e){
+            return false;
+        }
+    
+    }
+
 }

@@ -45,10 +45,11 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 	});
 
 
-	$router->group(['prefix' => 'api', 'namespace' => 'Api'], function () use ($router) {		
+	$router->group(['prefix' => 'sci', 'namespace' => 'Sci'], function () use ($router) {		
 		$router->group(['prefix' => 'demo'], function () use ($router) {
 			$router->get('/',['as' => 'apiIndexDemo','uses' => 'IndexDemoController@index']);
-			$router->get('/get-so',['as' => 'apiIndexDemo','uses' => 'IndexDemoController@getSo']);
+			$router->post('/',['as' => 'apiIndexPostDemo','uses' => 'IndexDemoController@index']);
+			$router->get('/order-type',['as' => 'apiOrderTypeDemo','uses' => 'IndexDemoController@getOrderType']);
 			
 			
 		});

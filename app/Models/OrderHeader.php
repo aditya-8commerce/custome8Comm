@@ -51,4 +51,8 @@ class OrderHeader extends Model
     public function fulfillmentCenter(){
         return $this->belongsTo('App\Models\FulfillmentCenter','fulfillment_center_id','fulfillment_center_id');
     }
+
+    public function orderType(){
+        return $this->belongsTo('App\Models\OrderTypeMaster','order_type','order_type');
+    }
 }

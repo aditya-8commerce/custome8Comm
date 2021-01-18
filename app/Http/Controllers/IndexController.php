@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 
 use Ramsey\Uuid\Uuid;
+use App\Res\IndexRes;
 
 use App\Models\Warehouse\Honeywell\PutSku;
 use App\Models\Sku;
@@ -15,6 +16,7 @@ use App\Models\TripHeader;
 use App\Models\TripStatusTracking;
 use Carbon\Carbon;
 
+use App\Models\OrderTypeMaster;
 
 class IndexController extends Controller
 {
@@ -57,6 +59,12 @@ error status code
 	} 
 	
 	public function coba(){
+		$model  = OrderTypeMaster::select('order_type_name','order_type')->get();
+		return IndexRes::resultData(200,$model,[]);
+	}
+
+
+	public function tripCreateBright(){
 		$today 			= new Carbon();
 		if($today->dayOfWeek == Carbon::SUNDAY){
 			ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '', '\App\Console\Commands\Bright\BrightAutoCreateTrip');
