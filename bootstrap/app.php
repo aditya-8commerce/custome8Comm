@@ -83,6 +83,7 @@ $app->middleware([
 $app->routeMiddleware([
     'AccessMarketplace' => App\Http\Middleware\AccessMarketplaceMiddleware::class,
     'AccessCourier'     => App\Http\Middleware\AccessCourierMiddleware::class,
+    'jwt.store'          => App\Http\Middleware\StoreJwtMiddleware::class,
 ]);
 
 
