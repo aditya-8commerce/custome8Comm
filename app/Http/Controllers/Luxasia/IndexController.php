@@ -755,11 +755,12 @@ class IndexController extends Controller
 	public function so(){
 
         set_time_limit(0);
-	    $directory      = base_path('public/LuxasiaFile/so');
+	    $directory      = base_path('public/LuxasiaFile');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        // $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['order_no','201028GAJNXK25']])->with('details')->get();
         $now            = date('mdY');
-        if(count($orders) > 0){    
+        if(count($orders) > 0){  
             $fp     	= fopen($directory.'/'.$fileName,'w');
             $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
             foreach($orders as $order){
@@ -770,9 +771,8 @@ class IndexController extends Controller
                     $Sequence++;
                 }
             }
-            echo $text;
-            //  fwrite($fp, $text);
-            //  fclose($fp);
+             fwrite($fp, $text);
+             fclose($fp);
         }else{
             ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSalesTransactionSync');
         }
