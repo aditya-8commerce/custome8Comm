@@ -36,12 +36,20 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 	});
 
 	$router->group(['prefix' => 'xstore', 'namespace' => 'Xstore'], function () use ($router) {
+	
 		$router->get('/',['as' => 'xstoreIndex','uses' => 'IndexController@index']);
 		$router->post('/login',['as' => 'xstoreLogin','uses' => 'IndexController@login']);
-		$router->get('/search-order/{storeId}',['as' => 'xstoreSearchOrder','uses' => 'IndexController@SearchOrder']);
-		$router->get('/order-detail/{storeId}/{orderId}',['as' => 'xstoreDetailOrder','uses' => 'IndexController@DetailOrder']);
-		$router->get('/search-detail-order/{storeId}/{orderId}',['as' => 'xstoreSearchDetailOrder','uses' => 'IndexController@SearchDetailOrder']);
-		$router->post('/update-qty-delivered/{storeId}/{idOrderDetail}',['as' => 'xstoreUpdateQtyDelivered','uses' => 'IndexController@updateQtyDelivered']);
+		$router->group(
+			['middleware' => 'jwt.store'], 
+			function() use ($router) {  
+				
+				$router->get('/profile',['as' => 'xstoreProfile','uses' => 'StoreController@profile']);
+				$router->get('/orders',['as' => 'xstoreOrders','uses' => 'StoreController@orders']);
+				$router->get('/orders/{orderHeaderId}',['as' => 'xstoreOrdersDetails','uses' => 'StoreController@orderDetails']);
+				$router->post('/received-order/{orderHeaderId}/{orderDetailId}',['as' => 'xstoreReceivedOrdersDetails','uses' => 'StoreController@receivedOrderDetails']);
+			
+			}
+		);
 	});
 
 
