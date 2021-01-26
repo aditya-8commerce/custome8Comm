@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use PDF;
 use PHPExcel; 
 use PHPExcel_IOFactory;
+use Firebase\JWT\JWT;
 
 use App\Http\Controllers\ApiLogController as ApiLog;
 use App\Res\IndexRes;

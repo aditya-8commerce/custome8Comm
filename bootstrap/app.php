@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
@@ -39,8 +41,7 @@ $app->withEloquent();
 
 $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
-    App\Exceptions\Handler::class,
-    App\Libraries\SH1HashServiceProvider::class
+    App\Exceptions\Handler::class
 );
 
 $app->singleton(
@@ -77,15 +78,15 @@ $app->alias('mailer', \Illuminate\Contracts\Mail\MailQueue::class);
 
 
 
-$app->middleware([
-    App\Http\Middleware\CorsMiddleware::class
-]);
 $app->routeMiddleware([
     'AccessMarketplace' => App\Http\Middleware\AccessMarketplaceMiddleware::class,
     'AccessCourier'     => App\Http\Middleware\AccessCourierMiddleware::class,
     'jwt.store'          => App\Http\Middleware\StoreJwtMiddleware::class,
 ]);
 
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
+]);
 
 // $app->middleware([
 //     App\Http\Middleware\ExampleMiddleware::class
@@ -107,9 +108,8 @@ $app->routeMiddleware([
 */
 
 // $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
-
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
@@ -121,6 +121,8 @@ $app->routeMiddleware([
 |
 */
 app('translator')->setLocale(env('APP_LOCALE', 'en'));
+
+
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',

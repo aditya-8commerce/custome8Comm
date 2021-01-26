@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Http\Response;
+
 use App\Models\ApiLog;
 
 class Handler extends ExceptionHandler
@@ -47,8 +48,6 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-
-
         $rendered   = parent::render($request, $exception);
         $url        = $request->path();
         $hostname   = gethostname();
@@ -92,9 +91,6 @@ class Handler extends ExceptionHandler
             'Content-Type'          => 'application/json',
             ])
         ->setStatusCode($level);
-
-        // return parent::render($request, $exception);
-		
     }
  
 }

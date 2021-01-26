@@ -18,7 +18,8 @@
         "phpoffice/phpspreadsheet": "^1.9",
         "predis/predis": "^1.1",
         "ramsey/uuid": "^4.1",
-        "tibonilab/pdf-lumen-bundle": "^2.0"
+        "tibonilab/pdf-lumen-bundle": "^2.0",
+        "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.4",
@@ -28,15 +29,11 @@
     "autoload": {
         "classmap": [
             "database/seeds",
-            "database/factories",
-            "app/Libraries"
+            "database/factories"
         ],
         "psr-4": {
             "App\\": "app/"
-        },
-        "files": [
-        "app/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "classmap": [

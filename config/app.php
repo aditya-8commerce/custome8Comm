@@ -4,7 +4,7 @@ return [
 
     'name' => 'API 8commerce', 
 
-    'url' => env('APP_URL', 'http://147.139.184.60/v1'),
+    'url' => env('APP_URL', 'https://api.8commerce.com'),
 
     'timezone' => 'Asia/Jakarta',
 
