@@ -755,70 +755,29 @@ class IndexController extends Controller
 	public function so(){
 
         set_time_limit(0);
-	    $directory      = base_path('public/LuxasiaFile');
+	    $directory      = base_path('public/LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        // $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
-        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['order_no','201028GAJNXK25']])->with('details')->get();
+        // $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal']])->whereIn('order_no', ["210117FSK468UG","210119NVME798C","210121TCRVC8D2","21012326QA5HS0","2101256PHTYPBV","21012572WY41RR"])->with('details')->get();
         $now            = date('mdY');
-        if(count($orders) > 0){  
+        if(count($orders) > 0){    
             $fp     	= fopen($directory.'/'.$fileName,'w');
             $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
             foreach($orders as $order){
                 $Sequence = 0;
                 foreach($order->details as $det){
-                    $Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
-                    $text        .= "\nS|".$order->order_no."|".$Sequence."|".$order->order_source."|0056|".date_format(date_create($order->update_time),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($order->promo_code),0,20)."||".date_format(date_create($order->create_time),"Ymd")."|".date_format(date_create($order->create_time),"His")."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|||";
+                    $Retailprice    = $this->checkPrice($det->price) * $det->qty_ship;
+                    $discount_price = $this->checkPrice($det->discount_price);
+                    $text        .= "\nS|".$order->order_no."|".$Sequence."|".$order->order_source."|0056|".date_format(date_create($order->update_time),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|".$discount_price."|".$order->amount_order."|0|".substr($this->stringCheck($order->promo_code),0,20)."||".date_format(date_create($order->create_time),"Ymd")."|".date_format(date_create($order->create_time),"His")."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|||";
                     $Sequence++;
                 }
             }
+            // echo $text;
              fwrite($fp, $text);
              fclose($fp);
         }else{
             ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSalesTransactionSync');
         }
-    
-        
-        /*
-        set_time_limit(0);
-		
-		$yesterday		= date('Y-m-d',strtotime("-1 days"));
-	    $directory      = public_path('LuxasiaFile/so');
-        $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        $order          = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal'],['status','shipped']])->with('details')->get();
-        $now            = date('mdY');
-
-  
-        if(count($order) > 0){                
-            $fp     	= fopen($directory.'/'.$fileName,'w');
-            $text       = "Transaction Type|Order Number|Sequence Number|CustomerNumber|StoreID|DocumentDate|ItemCode|Quantity|Confirm_Qty|Retail price (* Qty)|Discount (*Qty)|Net Value (* Qty)|GST Amount|Discount_Code|Discount_name|Created_on|Created_time|Ship_to_FName|Ship_to_LName|Ship_to_Mobile|Ship_to_Email|Ship_to_Address|Ship_to_Postcode|Ship_to_City|Ship_to_Country|Ship_to_Special_Text|Bill_to_FName|Bill_to_LName|Bill_to_Mobile|Bill_to_Email|Bill_to_Address|Bill_to_Postcode|Bill_to_City|Bill_to_Country|Bill_to_Special_Text|Remarks1|Remarks2|Remarks3";
-            
-            foreach($order as $o){
-				$checkBuffer	= CustomeBuffer::where(['order_no' => $o->order_no , 'company_id' => $this->company_id])->first();
-				if($checkBuffer){
-					continue;
-				}else{
-					$Sequence = 0;
-					foreach($o->details as $det){
-						$Retailprice = $this->checkPrice($det->price) * $det->qty_ship;
-						$text        .= "\nS|".$o->order_no."|".$Sequence."|".$o->order_source."|0056|".date_format(date_create($o->order_date),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|0|".$Retailprice."|0|".substr($this->stringCheck($o->promo_code),0,20)."||".date_format(date_create($o->create_time),"Ymd")."|".date_format(date_create($o->create_time),"His")."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_code,0,10)."|".substr($o->dest_city,0,20)."|ID|".substr($this->stringCheck($o->dest_remarks),0,50)."|".substr($o->dest_name,0,35)."||".substr($o->dest_phone,0,20)."|".substr($o->dest_email,0,100)."|".substr($this->stringCheck($o->dest_address1),0,150)."|".substr($o->dest_postal_cod,0,10)."|".substr($o->dest_city,0,20)."|ID|".substr($this->stringCheck($o->dest_remarks),0,50)."|||";
-						$Sequence++;
-					
-					}
-
-					CustomeBuffer::create(['order_no' => $o->order_no , 'company_id' => $this->company_id , 'seq' => 1, 'type' => 'order']);
-				}
-				
-            }
-
-            // echo $text;
-             fwrite($fp, $text);
-             fclose($fp);
-
-        }else{
-            return IndexRes::resultData(200,['message' => 'no data'],[]);
-        }
-
-        */
     }
 
     private function checkPrice($price){

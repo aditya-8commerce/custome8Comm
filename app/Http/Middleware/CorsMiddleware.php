@@ -1,8 +1,4 @@
 <?php
-
-/**
-* Location: /app/Http/Middleware
-*/
 namespace App\Http\Middleware;
 
 use Closure;

@@ -53,9 +53,9 @@ class Handler extends ExceptionHandler
         $hostname   = gethostname();
 
         if ($exception instanceof ValidationException) {
-			$message = json_decode($exception->getResponse()->content());
+			$message = json_decode(@$exception->getResponse()->content());
 		}else{
-			$message    = $exception->getMessage();
+			$message    = @$exception->getMessage();
         }
         $level      = $rendered->getStatusCode();
         $channel    = $config['name'] ?? env('APP_ENV');

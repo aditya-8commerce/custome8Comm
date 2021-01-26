@@ -61,6 +61,7 @@ class IndexController extends Controller
 				$tripTracking->remarks      = "";
 				$tripTracking->create_by    = $check->driver_name;
 				$tripTracking->trip_id      = $check->trip_id;
+				$tripTracking->create_time      = date('Y-m-d H:i:s');
 				$tripTracking->save();
             }
              return IndexRes::resultData(200,['message' => 'Login Successfully', 'data' => $request->trip_id],[]);
@@ -147,12 +148,12 @@ class IndexController extends Controller
                             $check->pod             = $request->pod;
                             $check->longitude       = $request->longitude;
                             $check->latitude        = $request->latitude;
-                            $check->finish_time     = Carbon::now();
+                            $check->finish_time     = date('Y-m-d H:i:s');
                             $check->save();
     
                             OrderHeader::where('order_header_id',$check->order_header_id)->update([
                                 'status'        => 'delivered',
-                                'update_time'   => Carbon::now()
+                                'update_time'   => date('Y-m-d H:i:s')
                             ]);
     
                             OrderStatusTracking::insert([
@@ -161,12 +162,13 @@ class IndexController extends Controller
                                 "system"        => 'oms',
                                 "remarks"       => $request->remarks.' delivered by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
                                 "create_by"     => $check->tripHeader->driver_name,
-                                "order_header_id"   => $check->order_header_id
+                                "order_header_id"   => $check->order_header_id,
+                                "create_time"   => date('Y-m-d H:i:s')
                             ]);
                             
                             OrderDetail::where('order_header_id',$check->order_header_id)->update([
                                 'status'        => 'delivered',
-                                'update_time'   => Carbon::now()
+                                'update_time'   => date('Y-m-d H:i:s')
                             ]);
                             
                             return IndexRes::resultData(200,['message' => 'update successfully'],[]);
@@ -181,7 +183,7 @@ class IndexController extends Controller
     
                             OrderHeader::where('order_header_id',$check->order_header_id)->update([
                                 'trip_id'       => 0,
-                                'update_time'   => Carbon::now()
+                                'update_time'   => date('Y-m-d H:i:s')
                             ]);
                            
                             
@@ -191,7 +193,8 @@ class IndexController extends Controller
                                 "system"        => 'oms',
                                 "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
                                 "create_by"     => $check->tripHeader->driver_name,
-                                "order_header_id"   => $check->order_header_id
+                                "order_header_id"   => $check->order_header_id,
+                                "create_time"   => date('Y-m-d H:i:s')
                             ]);
     
                             return IndexRes::resultData(200,['message' => 'update successfully'],[]);
@@ -203,12 +206,12 @@ class IndexController extends Controller
                             $check->pod             = $request->pod;
                             $check->longitude       = $request->longitude;
                             $check->latitude        = $request->latitude;
-                            $check->finish_time     = Carbon::now();
+                            $check->finish_time     = date('Y-m-d H:i:s');
                             $check->save();
                             
                             OrderHeader::where('order_header_id',$check->order_header_id)->update([
                                 'status'        => 'return-reject',
-                                'update_time'   => Carbon::now()
+                                'update_time'   => date('Y-m-d H:i:s')
                             ]);
                            
                             
@@ -218,12 +221,13 @@ class IndexController extends Controller
                                 "system"        => 'oms',
                                 "remarks"       => $request->remarks.' failed by '.$check->tripHeader->driver_name.' - '.$check->tripHeader->vehicle_no,
                                 "create_by"     => $check->tripHeader->driver_name,
-                                "order_header_id"   => $check->order_header_id
+                                "order_header_id"   => $check->order_header_id,
+                                "create_time"   => date('Y-m-d H:i:s')
                             ]);
     
                             OrderDetail::where('order_header_id',$check->order_header_id)->update([
                                 'status'        => 'return-reject',
-                                'update_time'   => Carbon::now()
+                                'update_time'   => date('Y-m-d H:i:s')
                             ]);
                             return IndexRes::resultData(200,['message' => 'update successfully'],[]);
                         }else{
@@ -244,7 +248,7 @@ class IndexController extends Controller
         $check  = TripDetails::where([['trip_id' , $tripDetail->trip_id],['status','!=','finished']])->whereNotIn('trip_detail_id', [$tripDetail->trip_detail_id])->get();
         if(count($check) <= 0){
             TripHeader::where('trip_id' , $tripDetail->trip_id)
-                ->update(['finish_time' => Carbon::now()]);
+                ->update(['finish_time' =>date('Y-m-d H:i:s')]);
         }
     }
 

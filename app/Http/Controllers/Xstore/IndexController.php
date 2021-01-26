@@ -71,4 +71,5 @@ class IndexController extends Controller
         return JWT::encode($payload, env('APP_KEY'));
     
     }
+
 }

@@ -45,8 +45,8 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 				
 				$router->get('/profile',['as' => 'xstoreProfile','uses' => 'StoreController@profile']);
 				$router->get('/orders',['as' => 'xstoreOrders','uses' => 'StoreController@orders']);
-				$router->get('/orders/{orderHeaderId}',['as' => 'xstoreOrdersDetails','uses' => 'StoreController@orderDetails']);
-				$router->post('/received-order/{orderHeaderId}/{orderDetailId}',['as' => 'xstoreReceivedOrdersDetails','uses' => 'StoreController@receivedOrderDetails']);
+				$router->get('/order-details/{orderHeaderId}',['as' => 'xstoreOrdersDetails','uses' => 'StoreController@orderDetails']);
+				$router->post('/received-order',['as' => 'xstoreReceivedOrdersDetails','uses' => 'StoreController@receivedOrderDetails']);
 			
 			}
 		);
