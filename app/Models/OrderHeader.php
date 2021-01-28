@@ -29,7 +29,7 @@ class OrderHeader extends Model
             'ori_city','ori_area','ori_sub_area','ori_postal_code','ori_village','ori_remarks','fulfillment_center_id','promo_code','order_source',
             'omni_channel','dest_phone','dest_mobile','dest_phone2','dest_email','special_packaging','interface_job_id',
             'interface_time','ori_country','dest_country','message_shipped_id','message_delivered_id','message_delivered_sms_id','trip_id','order_amount',
-            'shipping_amount','insurance_amount','ori_phone');
+            'shipping_amount','insurance_amount','ori_phone','channel_id');
     public $timestamps      = true;
   
     public function details(){
