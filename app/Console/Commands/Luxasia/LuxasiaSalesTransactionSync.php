@@ -75,7 +75,8 @@ class LuxasiaSalesTransactionSync extends Command
         set_time_limit(0);
 	    $directory      = base_path('public/LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal']])->whereIn('status', ['shipped', 'delivered'])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        // $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal']])->whereIn('status', ['shipped', 'delivered'])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $orders         = OrderHeader::where([['company_id', $this->company_id], ['order_type','normal']])->whereIn('status', ['shipped'])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
         $now            = date('mdY');
         if(count($orders) > 0){    
             $fp     	= fopen($directory.'/'.$fileName,'w');
