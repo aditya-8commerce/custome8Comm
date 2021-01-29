@@ -151,10 +151,10 @@ class IndexController extends Controller
                             $check->finish_time     = date('Y-m-d H:i:s');
                             $check->save();
     
-                            OrderHeader::where('order_header_id',$check->order_header_id)->update([
-                                'status'        => 'delivered',
-                                'update_time'   => date('Y-m-d H:i:s')
-                            ]);
+                            // OrderHeader::where('order_header_id',$check->order_header_id)->update([
+                            //     'status'        => 'delivered',
+                            //     'update_time'   => date('Y-m-d H:i:s')
+                            // ]);
     
                             OrderStatusTracking::insert([
                                 "order_no"      => $check->order->order_no,
@@ -166,10 +166,10 @@ class IndexController extends Controller
                                 "create_time"   => date('Y-m-d H:i:s')
                             ]);
                             
-                            OrderDetail::where('order_header_id',$check->order_header_id)->update([
-                                'status'        => 'delivered',
-                                'update_time'   => date('Y-m-d H:i:s')
-                            ]);
+                            // OrderDetail::where('order_header_id',$check->order_header_id)->update([
+                            //     'status'        => 'delivered',
+                            //     'update_time'   => date('Y-m-d H:i:s')
+                            // ]);
                             
                             return IndexRes::resultData(200,['message' => 'update successfully'],[]);
                         }elseif($request->status == 'failed'){
