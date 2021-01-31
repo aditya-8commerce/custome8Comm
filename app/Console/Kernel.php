@@ -24,6 +24,13 @@ class Kernel extends ConsoleKernel
 
 
       Commands\Bright\BrightAutoCreateTrip::class, // bright
+
+      /**
+       * Courier
+       */
+
+      Commands\Courier\JneTrip::class, // bright
+
     ];
     
 
@@ -46,6 +53,9 @@ class Kernel extends ConsoleKernel
 
       // bright
       $schedule->command('BrightAutoCreateTrip:sender')->timezone('Asia/Jakarta')->cron('*/15 08-20 * * 1-6');
+
+      // Courier
+      $schedule->command('JneTrip:sender')->hourlyAt(10);
     }
 
     /**

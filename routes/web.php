@@ -11,6 +11,12 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 	$router->get('/coba',['as' => 'coba','uses' => 'IndexController@coba']); 
 	 
 
+	$router->group(['prefix' => 'jne', 'namespace' => 'Courier'], function () use ($router) {	
+		$router->get('/',['as' => 'indexJne','uses' => 'JneController@index']); 	
+		$router->get('/tracking',['as' => 'trackingJne','uses' => 'JneController@trackingByAwb']); 	
+		$router->get('/tracking-order',['as' => 'trackingJne','uses' => 'JneController@trackingAwb']); 
+		
+	});
 
 	$router->group(['prefix' => 'luxasia', 'namespace' => 'Luxasia'], function () use ($router) {
 		
