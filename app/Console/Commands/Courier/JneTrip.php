@@ -57,7 +57,7 @@ class JneTrip extends Command
     public function handle()
     {
         set_time_limit(0);
-        $models     = OrderHeader::where('status','shipped')->whereIn('courier_id',["jne","jne_trucking","jne_yes"])->with('details')->orderBy("order_header_id","ASC")->paginate(30);
+        $models     = OrderHeader::where('status','shipped')->whereIn('courier_id',["jne","jne_trucking","jne_yes"])->with('details')->orderBy("order_header_id","ASC")->paginate(100);
             
         if(count($models) > 0){
 			foreach($models as $order){
@@ -100,7 +100,70 @@ class JneTrip extends Command
 
  
 
+                    }elseif(@$res["cnote"]["last_status"] == "RETUR ORIGIN"){
+                        $old_date_timestamp = strtotime($res["cnote"]["cnote_pod_date"]);
+                        $new_date = date('Y-m-d H:i:s', $old_date_timestamp);  
+                        OrderHeader::where([["order_header_id" , $order->order_header_id]])->update(["status" => "return-reject" , "update_time" => $new_date]);
+
+
+                        usleep(25000);
+                            OrderStatusTracking::insert([
+                                "order_no"      => $order->order_no,
+                                "status"        => 'return-reject',
+                                "system"        => 'oms',
+                                "remarks"       => $res["cnote"]["last_status"].' => '.$res["cnote"]["keterangan"],
+                                "create_by"     => "api",
+                                "order_header_id"   => $order->order_header_id,
+                                "create_time"   => $new_date
+                            ]);
+
+ 
+
+                    }elseif(@$res["cnote"]["last_status"] == "CANCEL BY SHIPPER"){
+                        $old_date_timestamp = strtotime($res["cnote"]["cnote_pod_date"]);
+                        $new_date = date('Y-m-d H:i:s', $old_date_timestamp);  
+                        OrderHeader::where([["order_header_id" , $order->order_header_id]])->update(["status" => "return-reject" , "update_time" => $new_date]);
+
+
+                        usleep(25000);
+                            OrderStatusTracking::insert([
+                                "order_no"      => $order->order_no,
+                                "status"        => 'return-reject',
+                                "system"        => 'oms',
+                                "remarks"       => $res["cnote"]["last_status"].' => '.$res["cnote"]["keterangan"],
+                                "create_by"     => "api",
+                                "order_header_id"   => $order->order_header_id,
+                                "create_time"   => $new_date
+                            ]);
+
+ 
+
                     }else{
+                        if($res["cnote"]["cnote_date"] != ""){
+                            $old_date_timestamp = strtotime($res["cnote"]["cnote_date"]);
+                            $new_date = date('Y-m-d H:i:s', $old_date_timestamp);  
+                            $now = time(); // or your date as well
+                            $datediff = $now - $old_date_timestamp;
+    
+                            $totalDays =  round($datediff / (60 * 60 * 24));
+                            if($totalDays > 100){
+                                OrderHeader::where([["order_header_id" , $order->order_header_id]])->update(["status" => "delivered"]);
+    
+    
+                                usleep(25000);
+                                    OrderStatusTracking::insert([
+                                        "order_no"      => $order->order_no,
+                                        "status"        => 'return-reject',
+                                        "system"        => 'oms',
+                                        "remarks"       => "AUTO CLOSE BY SYSTEM ".date('Y-m-d H:i:s'),
+                                        "create_by"     => "api",
+                                        "order_header_id"   => $order->order_header_id,
+                                        "create_time"   =>  $order->update_time
+                                    ]);
+                            }
+                        }
+                        
+
                         continue;
                     }
                     usleep(25000);

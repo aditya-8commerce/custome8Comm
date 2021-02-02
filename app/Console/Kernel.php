@@ -14,22 +14,28 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
       \Laravelista\LumenVendorPublish\VendorPublishCommand::class,
-      Commands\Luxasia\LuxasiaSkuSync::class, // luxasia
-      Commands\Luxasia\LuxasiaPoSync::class, // luxasia
-      Commands\Luxasia\LuxasiaReceiptsPoSync::class, // luxasia
-      Commands\Luxasia\LuxasiaStockSync::class, // luxasia
-      Commands\Luxasia\LuxasiaStockTransferSync::class, // luxasia
-      Commands\Luxasia\LuxasiaSalesTransactionSync::class, // luxasia
-      Commands\Luxasia\LuxasiaSalesTransactionReturnSync::class, // luxasia
+      Commands\Luxasia\LuxasiaSkuSync::class,
+      Commands\Luxasia\LuxasiaPoSync::class,
+      Commands\Luxasia\LuxasiaReceiptsPoSync::class,
+      Commands\Luxasia\LuxasiaStockSync::class,
+      Commands\Luxasia\LuxasiaStockTransferSync::class,
+      Commands\Luxasia\LuxasiaSalesTransactionSync::class,
+      Commands\Luxasia\LuxasiaSalesTransactionReturnSync::class,
 
 
-      Commands\Bright\BrightAutoCreateTrip::class, // bright
+      Commands\Bright\BrightAutoCreateTrip::class,
 
       /**
        * Courier
        */
 
-      Commands\Courier\JneTrip::class, // bright
+      Commands\Courier\JneTrip::class,
+
+      /**
+       * Orders
+       */
+
+      Commands\Orders\AutoCloseOrder::class,
 
     ];
     
@@ -56,6 +62,9 @@ class Kernel extends ConsoleKernel
 
       // Courier
       $schedule->command('JneTrip:sender')->hourlyAt(10);
+
+      // Orders
+      $schedule->command('AutoCloseOrder:sender')->hourlyAt(15);
     }
 
     /**
