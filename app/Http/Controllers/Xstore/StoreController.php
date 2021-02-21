@@ -31,7 +31,7 @@ class StoreController extends Controller
 
     public function profile(Request $request){
         $auth	= $request->auth;
-        return IndexRes::resultData(200,$auth,[]);
+        return IndexRes::resultData(200,$auth,null);
     }
     
 
@@ -50,7 +50,7 @@ class StoreController extends Controller
         }
 
         $res = $query->paginate($perPage);
-        return IndexRes::resultData(200,$res,[]);
+        return IndexRes::resultData(200,$res,null);
     }
 
     public function orderDetails(Request $request,$orderHeaderId){
@@ -72,7 +72,7 @@ class StoreController extends Controller
         $res = $query->get();
 
         // $res    = ["message" => $auth];
-        return IndexRes::resultData(200,$res,[]);
+        return IndexRes::resultData(200,$res,null);
     }
 
     public function receivedOrderDetails(Request $request){
@@ -94,7 +94,7 @@ class StoreController extends Controller
         $orderDetailId   	= $request->order_detail_id;
 
         if($validator->fails()){
-            return IndexRes::resultData(422,[],["messages" => $validator->errors()]);
+            return IndexRes::resultData(422,null,["messages" => $validator->errors()]);
         }else{
             
                 try{
@@ -124,9 +124,9 @@ class StoreController extends Controller
                         ]);
                     }    
                     $res    = ["messages" =>'Successfully Update'];
-                    return IndexRes::resultData(200,$res,[]);
+                    return IndexRes::resultData(200,$res,null);
                 }catch(\Exception $e){
-                    return IndexRes::resultData(200,[],["message" => $e->getMessage()]);
+                    return IndexRes::resultData(500,null,["message" => $e->getMessage()]);
                 }
   
          

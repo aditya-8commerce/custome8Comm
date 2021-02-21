@@ -60,19 +60,17 @@ class AutoCloseOrder extends Command
                 $Date = $order->update_time;
                 $new_date = date('Y-m-d H:i:s', strtotime($Date. ' + 2 day'));
 
-                usleep(25000);
                 OrderHeader::where([["order_header_id" , $order->order_header_id]])->update(["status" => "delivered" , "update_time" => $new_date]);
 
 
                 if(count($order->details) > 0){
 
                     foreach($order->details as $detail){
+                        usleep(25000);
                         OrderDetail::where([["order_detail_id" , $detail->order_detail_id]])->update(["status" => "delivered" , "update_time" => $new_date , "qty_delivered" => $detail->qty_ship]);
                     }
 
                 }
-
-                usleep(25000);
                 OrderStatusTracking::insert([
                                 "order_no"      => $order->order_no,
                                 "status"        => 'delivered',

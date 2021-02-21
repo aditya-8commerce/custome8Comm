@@ -758,7 +758,22 @@ class IndexController extends Controller
 	    $directory      = base_path('public/LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
         // $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
-        $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal']])->whereIn('order_no', ["210117FSK468UG","210119NVME798C","210121TCRVC8D2","21012326QA5HS0","2101256PHTYPBV","21012572WY41RR"])->with('details')->get();
+        $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal']])->whereIn('order_no', ["210202TETP1G0A",
+        "210202V0T5TT1G",
+        "210202V5WCDVDD",
+        "210202UT0DEX1S",
+        "210202V2CB31EM",
+        "210203VHSAENHT",
+        "210202UMEDAY15",
+        "210202VDWQQEW6",
+        "2102030TKJTRWG",
+        "210202VDQKG4W1",
+        "210202UNGHXAUA",
+        "210202VCX4PEJ9",
+        "210201T0X62JJW",
+        "210201SR51B2B9",
+        "210202U2Y2KMR5",
+        "210201S212NU7A"])->with('details')->get();
         $now            = date('mdY');
         if(count($orders) > 0){    
             $fp     	= fopen($directory.'/'.$fileName,'w');

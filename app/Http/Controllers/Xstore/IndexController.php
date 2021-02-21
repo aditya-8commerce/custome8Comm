@@ -52,9 +52,9 @@ class IndexController extends Controller
             if ($selectedStore) {
                    $token = $this->jwt($selectedStore);
                    $data = ['token' => $token, 'type' => 'bearer'];
-                   return IndexRes::resultData(200,$data,[]);     
+                   return IndexRes::resultData(200,$data,null);     
            }else {
-                return IndexRes::resultData(422,[],["messages" =>'user not found']);      
+                return IndexRes::resultData(422,null,["messages" =>'user not found']);      
            }
         }
     }

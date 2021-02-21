@@ -35,7 +35,7 @@ class Kernel extends ConsoleKernel
        * Orders
        */
 
-      Commands\Orders\AutoCloseOrder::class,
+      // Commands\Orders\AutoCloseOrder::class,
 
     ];
     
@@ -64,7 +64,7 @@ class Kernel extends ConsoleKernel
       $schedule->command('JneTrip:sender')->hourlyAt(10);
 
       // Orders
-      $schedule->command('AutoCloseOrder:sender')->hourlyAt(15);
+      // $schedule->command('AutoCloseOrder:sender')->hourlyAt(15);
     }
 
     /**
