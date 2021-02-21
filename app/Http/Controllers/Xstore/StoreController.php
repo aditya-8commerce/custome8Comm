@@ -39,7 +39,7 @@ class StoreController extends Controller
         $auth	            = $request->auth;
         $sort_field         = "order_header_id";
         $sort_type          = "DESC";
-        $perPage        	= $request->per_page;
+        $perPage        	= 10;
         $order_no     		= $request->order_no;
 
         $query  = OrderHeader::with(['details','statusTracking','fulfillmentCenter'])->where([["dest_name" , $auth->store_code],["status", "shipped"]])->orderBy($sort_field,$sort_type);
@@ -50,7 +50,7 @@ class StoreController extends Controller
         }
 
         $res = $query->paginate($perPage);
-        return IndexRes::resultData(200,$res,null);
+        return IndexRes::resultData(200,$res,[]);
     }
 
     public function orderDetails(Request $request,$orderHeaderId){
