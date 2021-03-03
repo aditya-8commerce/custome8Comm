@@ -50,7 +50,7 @@ class StoreController extends Controller
         }
 
         $res = $query->paginate($perPage);
-        return IndexRes::resultData(200,$res,[]);
+        return IndexRes::resultData(200,$res,null);
     }
 
     public function orderDetails(Request $request,$orderHeaderId){

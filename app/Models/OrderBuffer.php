@@ -9,7 +9,7 @@ class OrderBuffer extends Model
 
     protected $table = 'tbl_order_buffer';
     protected $primaryKey   = 'id';
-    protected $fillable = array('order_no','company_id','shop_id','seq','channel','type','datas','datas_sci','create_time','channel_id','order_header_id');
+    protected $fillable = array('order_no','company_id','shop_id','seq','channel','type','datas','datas_sci','create_time','channel_id','order_header_id','sync_status');
     public $timestamps = false;
   
 }

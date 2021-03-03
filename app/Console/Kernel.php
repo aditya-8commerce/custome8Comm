@@ -53,7 +53,7 @@ class Kernel extends ConsoleKernel
       $schedule->command('LuxasiaStockTransferSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
       $schedule->command('LuxasiaSalesTransactionSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
       $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
-      $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('05:41');
+      $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
       $schedule->command('LuxasiaPoSync:sender')->hourlyAt(33);
       $schedule->command('LuxasiaReceiptsPoSync:sender')->hourlyAt(10);
 
@@ -61,7 +61,7 @@ class Kernel extends ConsoleKernel
       $schedule->command('BrightAutoCreateTrip:sender')->timezone('Asia/Jakarta')->cron('*/15 08-20 * * 1-6');
 
       // Courier
-      $schedule->command('JneTrip:sender')->hourlyAt(10);
+      // $schedule->command('JneTrip:sender')->hourlyAt(10);
 
       // Orders
       // $schedule->command('AutoCloseOrder:sender')->hourlyAt(15);

@@ -26,7 +26,7 @@ class Company extends Model
     public $incrementing    = false;
     protected $fillable     = array(
         'name', 'address1', 'address2', 'phone', 'mobile', 'contact_person', 
-        'fax', 'country', 'zone_activate'
+        'fax', 'country', 'zone_activate','status'
     );
     public $timestamps = true;
   

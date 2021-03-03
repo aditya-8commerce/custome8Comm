@@ -139,7 +139,7 @@ class JneTrip extends Command
  
 
                     }else{
-                        if($res["cnote"]["cnote_date"] != ""){
+                        if(@$res["cnote"]["cnote_date"] != ""){
                             $old_date_timestamp = strtotime($res["cnote"]["cnote_date"]);
                             $new_date = date('Y-m-d H:i:s', $old_date_timestamp);  
                             $now = time(); // or your date as well

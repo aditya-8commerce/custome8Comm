@@ -55,4 +55,7 @@ class OrderHeader extends Model
     public function orderType(){
         return $this->belongsTo('App\Models\OrderTypeMaster','order_type','order_type');
     }
+    public function buffer(){
+        return $this->belongsTo('App\Models\OrderBuffer','order_header_id','order_header_id');
+    }
 }
