@@ -49,16 +49,16 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
       // luxasia
-      $schedule->command('LuxasiaSkuSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
-      $schedule->command('LuxasiaStockTransferSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
-      $schedule->command('LuxasiaSalesTransactionSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
-      $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
-      $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('01:00');
+      $schedule->command('LuxasiaSkuSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
+      $schedule->command('LuxasiaStockTransferSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
+      $schedule->command('LuxasiaSalesTransactionSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
+      $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
+      $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
       $schedule->command('LuxasiaPoSync:sender')->hourlyAt(33);
       $schedule->command('LuxasiaReceiptsPoSync:sender')->hourlyAt(10);
 
       // bright
-      $schedule->command('BrightAutoCreateTrip:sender')->timezone('Asia/Jakarta')->cron('*/15 08-20 * * 1-6');
+      $schedule->command('BrightAutoCreateTrip:sender')->timezone('Asia/Jakarta')->cron('*/15 08-15 * * 1-6');
 
       // Courier
       // $schedule->command('JneTrip:sender')->hourlyAt(10);
