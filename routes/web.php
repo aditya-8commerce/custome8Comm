@@ -7,6 +7,7 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
 	$router->get('/version', function () use ($router) {
 		return $router->app->version();
 	});
+	$router->post('/test-new-employee',['as' => 'newEmployee','uses' => 'NewEmployeeController@index']); 
 
 	$router->get('/coba',['as' => 'coba','uses' => 'IndexController@coba']); 
 	 

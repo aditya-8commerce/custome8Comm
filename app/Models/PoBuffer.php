@@ -17,7 +17,9 @@ class PoBuffer extends Model
         'channel',
         'datas',
         'datas_sci',
-        'create_time'
+        'create_time',
+        'po_header_id',
+        'sync'
     );
     public $timestamps = false;
   

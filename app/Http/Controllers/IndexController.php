@@ -15,6 +15,7 @@ use App\Models\TripDetails;
 use App\Models\TripHeader;
 use App\Models\TripStatusTracking;
 use Carbon\Carbon;
+use File;
 
 use App\Models\OrderTypeMaster;
 
@@ -59,8 +60,13 @@ error status code
 	} 
 	
 	public function coba(){
-		$model  = OrderTypeMaster::select('order_type_name','order_type')->get();
-		return IndexRes::resultData(200,$model,[]);
+		$src = "/var/www/html/Version_1/public/LuxasiaFile/so/Archive/SALES_IB_01032021_0100.TXT";  // source folder or file
+		$dest = "/home/Aditya/SALES_IB_01032021_0100.TXT";   // destination folder or file        
+		if(!copy($src,$dest)){
+			echo "File can't be copied! \n"; 
+		}else{
+			echo "File has been copied! \n";
+		}
 	}
 
 
