@@ -52,7 +52,7 @@ class Kernel extends ConsoleKernel
       $schedule->command('LuxasiaSkuSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
       $schedule->command('LuxasiaStockTransferSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
       $schedule->command('LuxasiaSalesTransactionSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
-      $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
+      $schedule->command('LuxasiaSalesTransactionReturnSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:40');
       $schedule->command('LuxasiaStockSync:sender')->timezone('Asia/Jakarta')->dailyAt('00:30');
       $schedule->command('LuxasiaPoSync:sender')->hourlyAt(33);
       $schedule->command('LuxasiaReceiptsPoSync:sender')->hourlyAt(10);

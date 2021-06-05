@@ -725,7 +725,8 @@ class IndexController extends Controller
         set_time_limit(0);
 	    $directory      = base_path('public/LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
-        $orders         = PoHeader::where([['company_id', 'ECBRIGHT'], ['po_type','so_return'],['status','received']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        // $orders         = PoHeader::where([['company_id', 'ECBRIGHT'], ['po_type','so_return'],['status','received']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
+        $orders         = PoHeader::whereIn("po_no",["210502JV0UX946","2105084849T93P"])->with('details')->get();
         $now            = date('mdY');
         if(count($orders) > 0){    
             $fp     	= fopen($directory.'/'.$fileName,'w');
@@ -738,9 +739,9 @@ class IndexController extends Controller
                     $Sequence++;
                 }
             }
-            echo $text;
-            //  fwrite($fp, $text);
-            //  fclose($fp);
+            // echo $text;
+             fwrite($fp, $text);
+             fclose($fp);
         }else{
             ApiLog::insertLog('Custome Server',$this->company_id,'', 'SUCCESS' , '','\App\Console\Commands\Luxasia\LuxasiaSalesTransactionSync');
         }
@@ -758,7 +759,61 @@ class IndexController extends Controller
 	    $directory      = base_path('public/LuxasiaFile/so');
         $fileName       = 'SALES_IB_'.date('dmY_Hi').'.TXT';
         // $orders         = OrderHeader::where([['company_id', 'ECLUXASIA'], ['order_type','normal'],['status','shipped']])->whereRaw('DATE(update_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)')->with('details')->get();
-        $orders         = OrderHeader::with('details')->where('company_id', 'ECLUXASIA')->whereIn("status",["shipped","delivered"])->get();
+        // $orders         = OrderHeader::with('details')->where('company_id', 'ECLUXASIA')->whereIn("status",["shipped","delivered"])->get();
+        $orders         = OrderHeader::with('details')->where('company_id', 'ECLUXASIA')->whereIn("order_no",["210504QKUNDASW",
+        "210504QMA2MTRM",
+        "210504QPWYGGCS",
+        "210504QVX99DBN",
+        "210504R2P99SBK",
+        "210504R5K9SRD0",
+        "210505RNTT84PK",
+        "210505RP3PBF38",
+        "210505RPJQ1YJT",
+        "210505RQ51UJ25",
+        "210505RSKNN99J",
+        "210505RVXUNQSY",
+        "210505RXN1E8RT",
+        "210505S79C0EDW",
+        "210505SBSH2Y7C",
+        "210505SJPHPXMN",
+        "210505SKSHTUAY",
+        "210505SN6PPJCD",
+        "210505SPQJ2U0V",
+        "210505SSGS812S",
+        "210505SXC4HM57",
+        "210505SXSA2W2S",
+        "210505SXVTK18N",
+        "210505T118FSPE",
+        "210505T20DSN8D",
+        "210505T2TCPFMB",
+        "210505T4TTBVDN",
+        "210505T5A4QA2B",
+        "210505TAJD5NAS",
+        "210505TMA8EASS",
+        "210505TN7VGFTW",
+        "210505TNDVVDTA",
+        "210505TS8NB0UC",
+        "210505TTEJ67QV",
+        "210505TV5X2PR2",
+        "210505TVKTMA1W",
+        "210505U0772389",
+        "210506U3QUYY5E",
+        "210506UNWC92FM",
+        "210506V3H2NHSJ",
+        "210506V3KJ4DUX",
+        "210506V5U6PWVB",
+        "210506VAA7HR99",
+        "210506VCQBAAW5",
+        "210506VDV94BTC",
+        "210506VEYYAMU1",
+        "210506VGDQ7TB0",
+        "210506VGX8TK9P",
+        "2105217DUCTU7A",
+        "2105217EB1DGRW",
+        "2105217J09FMRR",
+        "2105217RU8SM9U",
+        "2105217T95AQSX",
+        "21052180RBG9U7"])->get();
         
         $now            = date('mdY');
         if(count($orders) > 0){    
@@ -767,12 +822,12 @@ class IndexController extends Controller
             foreach($orders as $order){
                 $buffer = OrderBuffer::where([["order_no",$order->order_no],["company_id",$order->company_id]])->first();
                 if($buffer){
-                    if($buffer->sync_status > 0){
-                        continue;
-                    }else{
-                        $buffer->sync_status    = 1;
-                        $buffer->create_time    = date('Y-m-d :H:i:s');
-                        $buffer->save();
+                    // if($buffer->sync_status > 0){
+                    //     continue;
+                    // }else{
+                    //     $buffer->sync_status    = 1;
+                    //     $buffer->create_time    = date('Y-m-d :H:i:s');
+                    //     $buffer->save();
 
                         $Sequence = 0;
                         foreach($order->details as $det){
@@ -781,7 +836,7 @@ class IndexController extends Controller
                             $text        .= "\nS|".$order->order_no."|".$Sequence."|".$order->order_source."|0056|".date_format(date_create($order->update_time),"Ymd")."|".$det->sku_code."|".$det->qty_order."|".$det->qty_ship."|".$Retailprice."|".$discount_price."|".$order->amount_order."|0|".substr($this->stringCheck($order->promo_code),0,20)."||".date_format(date_create($order->create_time),"Ymd")."|".date_format(date_create($order->create_time),"His")."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|".substr($order->dest_name,0,35)."||".substr($order->dest_phone,0,20)."|".substr($order->dest_email,0,100)."|".substr($this->stringCheck($order->dest_address1),0,150)."|".substr($order->dest_postal_code,0,10)."|".substr($order->dest_city,0,20)."|ID|".substr($this->stringCheck($order->dest_remarks),0,50)."|||";
                             $Sequence++;
                         }
-                    }
+                    // }
                 }else{
                     OrderBuffer::create([
                         'order_no'          => $order->order_no,

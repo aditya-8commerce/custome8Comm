@@ -60,6 +60,16 @@ error status code
 	} 
 	
 	public function coba(){
+		$src = OrderTypeMaster::get();
+		return response()
+		->json(['status'=>200 ,'datas' => $src, 'errors' => null])
+		->setStatusCode(200)
+		->withHeaders(['Content-Type' => 'application/json',]);
+
+
+	}
+	
+	public function moveFile(){
 		$src = "/var/www/html/Version_1/public/LuxasiaFile/so/Archive/SALES_IB_01032021_0100.TXT";  // source folder or file
 		$dest = "/home/Aditya/SALES_IB_01032021_0100.TXT";   // destination folder or file        
 		if(!copy($src,$dest)){

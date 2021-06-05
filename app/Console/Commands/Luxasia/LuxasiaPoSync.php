@@ -79,7 +79,7 @@ class LuxasiaPoSync extends Command
 				$file 		= pathinfo($path);
                 $fileName	= $file['basename'];
                 
-                return $this->checkPOFile($file,$fileName);
+                $this->checkPOFile($file,$fileName);
                 
                 sleep(1);
 			}
@@ -338,7 +338,7 @@ class LuxasiaPoSync extends Command
 				
 			// 	$res = ['status' => 402 , 'message' =>[], 'errors' => $result];
             // }
-
+	        $res = ['status' => 200 , 'message' =>['message' =>"ok"], 'errors' => []];
 			$this->insertPoBuffer($datas);
 		}
 		return $res;
@@ -347,7 +347,7 @@ class LuxasiaPoSync extends Command
  
     
     private function insertPoBuffer($datas){
-        $check      = PoBuffer::where([['company_id' , $datas["company_id"]], ['po_no' , $datas["po_no"]]])->first();
+        $check      = PoBuffer::where([['company_id' , $datas["company_id"]], ['po_no' , $datas["po_no"]],["seq","1"]])->first();
         if(!$check) {
             $po             = new PoBuffer;
             $po->company_id = $datas["company_id"];

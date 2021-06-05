@@ -99,18 +99,19 @@ class StoreController extends Controller
             
                 try{
                     OrderDetail::where([["order_header_id" , $orderHeaderId],["order_detail_id" , $orderDetailId]])
-                        ->update(['qty_delivered' => $request->qty_delivered , "status" => "delivered"]);
+                        ->update(['qty_delivered' => $request->qty_delivered , "status" => "delivered", "update_time" => date('Y-m-d H:i:s')]);
 
                     $check  = OrderDetail::whereHas('header', function($query) use ($store_code,$orderHeaderId){
                             $query->where([["dest_name" , $store_code],["status", "shipped"]]);
                         })->where([["order_header_id" , $orderHeaderId],["qty_ship",">",0]])->whereNull(["qty_delivered"])->get()->count();
                     if($check <= 0){
                         OrderDetail::where([["order_header_id" , $orderHeaderId],["order_detail_id" , $orderDetailId]])
-                            ->update(['qty_delivered' => $request->qty_delivered , "status" => "delivered"]);
+                            ->update(['qty_delivered' => $request->qty_delivered , "status" => "delivered", "update_time" => date('Y-m-d H:i:s')]);
                         $res    = ["messages" =>'Successfully Update'];
                         
                         $order  = OrderHeader::where('order_header_id',$orderHeaderId)->first();
-                        $order->status = "delivered";
+                        $order->status      = "delivered";
+                        $order->update_time	= date('Y-m-d H:i:s');
                         $order->save();
                         
                         OrderStatusTracking::insert([
